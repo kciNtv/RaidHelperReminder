@@ -1,26 +1,22 @@
-# Two schedules, one script:
-#   - Every 15 minutes during the evening raid window -> announcements mode
-#     (the "invites started" post needs minute-level timing; reminders don't).
-#     21:00-03:59 UTC = 5PM-11:59PM EDT / 4PM-10:59PM EST - wide enough for
-#     any evening raid with a 60-75 min announcement lead. Running all day
-#     would cost ~2,900 Actions minutes/month (over the 2,000 free for
-#     private repos); the evening window costs ~870.
-#   - Friday 5PM Eastern -> reminders mode (the weekly "you haven't signed up"
-#     DMs). GitHub cron is UTC and can't follow US daylight saving, so BOTH
-#     possible UTC times are scheduled; state.json dedup makes the second one
-#     a harmless no-op (one of them lands at 4PM or 6PM ET and finds nothing
-#     new to send).
+# Weekly sign-up reminder DMs. The raid-time channel announcements live in
+# announce.yml (one file per purpose - GitHub misattributes which cron fired
+# a run after workflow edits, so nothing here guesses modes from schedules).
+#
+# Schedule: Friday 5PM Eastern. GitHub cron is UTC and can't follow US
+# daylight saving, so BOTH possible UTC times are scheduled; state.json dedup
+# makes the second one a harmless no-op (one of them lands at 4PM or 6PM ET
+# and finds nothing new to send).
 #
 # Set the two secrets under: Repo -> Settings -> Secrets and variables -> Actions
 #   DISCORD_BOT_TOKEN
 #   RAIDHELPER_API_KEY
-# The "Run workflow" button (Actions tab) triggers a manual run for testing.
+# The "Run workflow" button (Actions tab) triggers a manual run for testing
+# (all three modes available there).
 
 name: Send signup reminders
 
 on:
   schedule:
-    - cron: "*/15 0-3,21-23 * * *"   # announcements (evening raid window, see above)
     - cron: "0 21 * * 5"     # reminders: Friday 5PM EDT (summer)
     - cron: "0 22 * * 5"     # reminders: Friday 5PM EST (winter)
   workflow_dispatch:
@@ -39,7 +35,7 @@ permissions:
   contents: write   # allows the workflow to commit state.json back
 
 concurrency:
-  group: reminders   # never let two runs overlap and double-send
+  group: reminders   # shared with announce.yml - never two runs at once
   cancel-in-progress: false
 
 jobs:
@@ -61,11 +57,8 @@ jobs:
             MODE="${{ inputs.mode }}"
             EXTRA=""
             [ "${{ inputs.dry_run }}" = "true" ] && EXTRA="--dry-run"
-          elif [ "${{ github.event.schedule }}" = "0 21 * * 5" ] || [ "${{ github.event.schedule }}" = "0 22 * * 5" ]; then
-            MODE="reminders"
-            EXTRA=""
           else
-            MODE="announcements"
+            MODE="reminders"
             EXTRA=""
           fi
           echo "Running mode: $MODE $EXTRA"
