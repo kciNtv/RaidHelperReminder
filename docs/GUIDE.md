@@ -15,11 +15,64 @@ The target workflow it delivers, end to end:
 
 ---
 
-## 1. The problem and the division of labor
+## 1. The original requirements, and how each one is addressed
 
-Raid-Helper's built-in reminders only notify people who **did** sign up.
-Chasing the people who *haven't* responded is manual: scroll the roster,
-compare against the sign-up list, DM each straggler.
+This system exists to satisfy five requirements, stated originally as:
+
+> 1. Creates a Signup for each Raid Night (Tuesday, Wednesday, Thursday, and
+>    Sunday) at Tuesday 7PM EST
+> 2. Reminds people via a discord message that have access to the channel to
+>    signup for each raid on Friday at 5PM EST
+> 3. Will send out a discord message to them when they Signup to make sure
+>    they have their Gear and Consumes required in the consume FAQ channel
+> 4. On Tuesday, Wednesday, Thursday, and Sunday at 8:15 PM EST a discord
+>    message in the signup channel that @raiders and says: "Raid invites has
+>    started for tonight's raid. Please have your gear and consumes. Whisper
+>    Kcin or an Officer for an invite!"
+> 5. Tracks Raid Attendance
+
+How each is met, and by which part of the stack:
+
+**Requirement 1 — recurring signups.** Native Raid-Helper **Premium**
+("Recurring Events"). Each raid night is set up once as a weekly recurring
+event; Raid-Helper posts the new week's signups automatically from then on.
+Setup: section 2.1. Nothing in this project is involved.
+
+**Requirement 2 — Friday 5PM reminder to those who haven't signed up.**
+**This project** (Raid-Helper itself only has the *manual* `/unsigned`
+command — no scheduled version exists). The script runs every Friday at 5PM
+Eastern via the GitHub Actions schedule, compares each upcoming raid's
+sign-up list against that raid's expected members, and DMs everyone missing
+— one digest DM listing all their unsigned raids. "People that have access
+to the channel" is expressed as an *audience*: normally the team's role
+(which is what grants channel access), or — if channel access doesn't map to
+a role — the `channel_access` audience type, which computes viewers directly
+from the channel's permission settings. How it works: section 3; audiences:
+section 4.
+
+**Requirement 3 — gear/consumes DM on signup.** Native Raid-Helper
+**Premium** (the `response` advanced setting: "Sends members the specified
+text or embed via DM after successful Sign-Up"). Set once on the recurring
+events, pointing members at the consume FAQ channel. Setup: section 2.2.
+
+**Requirement 4 — the 8:15PM "invites started" post.** **This project**
+(Raid-Helper's built-in `reminder` setting pings *people who signed up*, not
+a role, and its text isn't customizable to this wording). The script's
+`announcements` config posts the exact requested message into each event's
+own signup channel, mentioning @raiders, 15 minutes before raid start —
+which is 8:15PM for an 8:30 raid, on every raid night, automatically. The
+announcement schedule runs every 15 minutes so the post lands on time.
+Config: section 7.
+
+**Requirement 5 — attendance tracking.** Native Raid-Helper (the
+`attendance` advanced setting, on by default) with stats via `/attendance`;
+supports per-team tags. Setup: section 2.3. Nothing in this project is
+involved.
+
+In short: **1, 3, and 5 are configuration inside Raid-Helper Premium** (no
+code, no hosting — verify them via section 2), and **2 and 4 are this
+project** — a single scheduled script that fills the two gaps Raid-Helper
+doesn't cover:
 
 | Need | Covered by |
 |---|---|

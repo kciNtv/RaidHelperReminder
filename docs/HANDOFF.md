@@ -5,6 +5,14 @@ left to test, and exactly where every secret and variable goes. Work through
 it top to bottom. For background on *how* anything works, see
 [GUIDE.md](GUIDE.md) — but this checklist stands on its own.
 
+**Verifying the original asks were met?** [GUIDE.md section 1](GUIDE.md)
+restates the five original requirements verbatim (recurring signups, Friday
+5PM non-signer reminders, gear/consumes DM on signup, the 8:15PM "invites
+started" post, attendance tracking) and traces each one to exactly how and
+where it is addressed — which ones are Raid-Helper Premium configuration and
+which ones this project provides. Section 3 of the guide explains how the
+automation works in plain language, with a diagram.
+
 ---
 
 ## 1. Current state (nothing here needs re-doing)
