@@ -245,13 +245,30 @@ explains every field. Test with a dry run before going live (section 8).
 
 ---
 
-## 6. Hosting: where does the script run?
+## 6. Hosting: where does the script run? (pick exactly ONE)
 
-### Option A — GitHub Actions (recommended)
+The script needs *something* to run it on a schedule. There are three
+options. **They are alternatives, not steps — choose one and ignore the
+other two.** All three run the identical script with the identical config;
+switching later is painless.
+
+| | **A: GitHub Actions** | **B: Your own PC** | **C: Always-on box** |
+|---|---|---|---|
+| What runs it | GitHub's servers | Windows Task Scheduler | A Pi / VPS with cron |
+| Cost | Free | Free | Free-to-cheap |
+| Works while your PC is off | Yes | **No** | Yes |
+| Setup effort | Lowest (already wired up in this repo) | Low | Highest |
+| Timing precision | Within a few minutes | To the minute | To the minute |
+| Where you check it ran | Actions tab (log per run) | Task Scheduler history | cron logs |
+| Best for | Almost everyone — **the recommended default, and what this repo is already set up for** | Wanting everything on hardware you own, and the PC is usually on at reminder times | Already owning a home server / comfortable with Linux |
+
+### Option A — GitHub Actions (recommended; this repo is already set up for it)
 
 Free, no server, every run leaves a readable log.
 
-1. Create a **private repository**, upload this project.
+1. This repository already contains everything — if you're reading this on
+   GitHub, this step is done. (Starting fresh instead: create a **private
+   repository** and upload the project files.)
 2. Repo → Settings → Secrets and variables → Actions → add
    `DISCORD_BOT_TOKEN` and `RAIDHELPER_API_KEY`.
 3. Done. `.github/workflows/remind.yml` already schedules:
@@ -290,11 +307,17 @@ schtasks /Create /TN "RaidReminders" /SC WEEKLY /D FRI /ST 17:00 /TR "powershell
 (Task Scheduler follows your PC's local timezone, so 17:00 means 5PM Eastern
 year-round if the PC is set to Eastern — no daylight-saving juggling.)
 
+> **If you choose B (or C): keep the GitHub Actions workflow disabled**
+> (Actions tab → the workflow → "…" → Disable). Two schedulers running the
+> same config keep separate `state.json` notebooks and WILL double-message
+> people. One scheduler at a time, always.
+
 ### Option C — always-on alternatives
 
 Raspberry Pi or any Linux box with `cron`; Oracle Cloud free tier; Railway /
 Fly.io hobby tiers; Cloudflare Workers cron (would need a JavaScript port —
-mentioned for completeness only).
+mentioned for completeness only). Same setup as Option B, with cron instead
+of Task Scheduler — and the same rule: keep the GitHub workflow disabled.
 
 ---
 
