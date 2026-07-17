@@ -55,9 +55,9 @@ numbered list below and in [docs/HANDOFF.md](docs/HANDOFF.md).*
 | 1 | Create the Discord bot (token copied, **Server Members Intent** on) | ✅ July 17 |
 | 2 | Invite the bot to the server (needs Manage Server — else send invite URL to guild leader) | ✅ July 17 — bot is in the server |
 | 3 | Get the Raid-Helper API key (`/apikey` → show; needs elevated perms) | ✅ July 17 — key received from guild leader |
-| 4 | Collect IDs: server, team roles, @raiders role, signup channels | 🔄 in progress today |
+| 4 | Collect IDs: server, team roles, @raiders role, signup channels | ✅ July 17 — all 8 collected (Red: Tue+Thu, Blue: Wed+Sun) |
 | 5 | Add repo secrets `DISCORD_BOT_TOKEN` + `RAIDHELPER_API_KEY` | ✅ July 17 — both verified present |
-| 6 | Commit real `config.json` | ⬜ |
+| 6 | Commit real `config.json` | ✅ July 17 — teamRed/teamBlue audiences, 4 channel rules, fallback off |
 | 7 | Enable the Actions workflow | ⬜ |
 | 8 | Dry-run (HANDOFF 5.2) — proves secrets + IDs, sends nothing | ⬜ |
 | 9 | Live DM smoke test to one person only (HANDOFF 5.3) | ⬜ |
