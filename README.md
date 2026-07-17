@@ -32,6 +32,11 @@ Features:
 
 ## Go live — current status and remaining steps
 
+> **Handing this over or picking it up fresh? Start with
+> [docs/HANDOFF.md](docs/HANDOFF.md)** — the complete checklist: every value
+> to collect and where it goes, exactly where secrets and variables are
+> placed, and the ordered test plan with pass conditions.
+
 **Status right now:** all code and docs are in place and tested. The Actions
 workflow is **manually disabled** so it doesn't fail-and-email every 15
 minutes while the secrets are missing. Remaining steps, in order:
