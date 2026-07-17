@@ -678,7 +678,9 @@ def run(config, state, now, dry_run, bot_token, rh_api_key, log=print, mode="all
             "\n".join(f"- {line}" for line in activity)
         if len(report) > 1900:  # Discord message limit is 2000 chars
             report = report[:1900] + f"\n… (+{len(activity)} actions total)"
-        send_channel_message(log_channel, report, bot_token)
+        if not send_channel_message(log_channel, report, bot_token):
+            log(f"FAILED to post run report to log channel {log_channel} - "
+                "check the bot can view + send there.")
 
 
 def main(argv=None):
