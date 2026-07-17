@@ -1,0 +1,64 @@
+# Raid-time announcements ("invites started" channel posts).
+#
+# This file has exactly ONE purpose so no mode-detection is needed:
+# every run here is announcements mode. The weekly reminder DMs live in
+# remind.yml. (Historical note: one combined file routed by matching
+# github.event.schedule, but GitHub misattributes which cron fired a run
+# after workflow edits, silently running the wrong mode.)
+#
+# Schedule: every 15 minutes during the evening raid window.
+# 21:00-03:59 UTC = 5PM-11:59PM EDT / 4PM-10:59PM EST - wide enough for any
+# evening raid with a 60-75 min announcement lead. Running all day would cost
+# ~2,900 Actions minutes/month (over the 2,000 free for private repos); the
+# evening window costs ~870 for both workflows combined.
+
+name: Raid-time announcements
+
+on:
+  schedule:
+    - cron: "*/15 0-3,21-23 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (print instead of sending)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # allows the workflow to commit state.json back
+
+concurrency:
+  group: reminders   # shared with remind.yml - never two runs at once
+  cancel-in-progress: false
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run announcements
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          RAIDHELPER_API_KEY: ${{ secrets.RAIDHELPER_API_KEY }}
+        run: |
+          EXTRA=""
+          [ "${{ inputs.dry_run }}" = "true" ] && EXTRA="--dry-run"
+          python remind.py --mode announcements $EXTRA
+
+      - name: Save state (so nothing is ever sent twice)
+        run: |
+          if [ -n "$(git status --porcelain state.json)" ]; then
+            git config user.name "reminder-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add state.json
+            git commit -m "Update reminder state"
+            git pull --rebase
+            git push
+          else
+            echo "No state changes."
+          fi
