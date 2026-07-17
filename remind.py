@@ -653,12 +653,32 @@ def run(config, state, now, dry_run, bot_token, rh_api_key, log=print, mode="all
     events = fetch_upcoming_events(server_id, rh_api_key, horizon)
     log(f"Fetched {len(events)} upcoming event(s) within {max(windows)}h.")
 
+    # Optional run report: every action line is also collected and, if
+    # discord.log_channel_id is set, posted to that channel afterwards -
+    # so officers can see what fired without opening the GitHub log.
+    activity = []
+
+    def tracked_log(line):
+        log(line)
+        s = str(line).strip()
+        if s.startswith(("DM sent", "DMs closed", "Announcement posted",
+                         "FAILED", "Fallback")):
+            activity.append(s)
+
     ctx = DiscordContext(guild_id, bot_token)
     if mode in ("all", "reminders"):
-        run_reminders(config, state, events, now, dry_run, bot_token, ctx, log)
+        run_reminders(config, state, events, now, dry_run, bot_token, ctx, tracked_log)
     if mode in ("all", "announcements"):
-        run_announcements(config, state, events, now, dry_run, bot_token, log)
+        run_announcements(config, state, events, now, dry_run, bot_token, tracked_log)
     prune_state(state, now)
+
+    log_channel = (config.get("discord") or {}).get("log_channel_id") or ""
+    if activity and log_channel and not dry_run and bot_token:
+        report = "**Raid Reminder — run report** (<t:%d:f>)\n" % now + \
+            "\n".join(f"- {line}" for line in activity)
+        if len(report) > 1900:  # Discord message limit is 2000 chars
+            report = report[:1900] + f"\n… (+{len(activity)} actions total)"
+        send_channel_message(log_channel, report, bot_token)
 
 
 def main(argv=None):

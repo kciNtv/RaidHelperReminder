@@ -3,7 +3,8 @@
 
   "discord": {
     "guild_id": "1349830753403539679",
-    "fallback_channel_id": ""
+    "fallback_channel_id": "",
+    "log_channel_id": "1527491633233526824"
   },
 
   "raidhelper": {

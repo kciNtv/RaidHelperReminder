@@ -385,7 +385,8 @@ picks it up. No code edits, ever.
 {
   "discord": {
     "guild_id": "123...",            // your Discord server ID
-    "fallback_channel_id": ""        // optional: channel to ping people whose DMs are closed ("" = off)
+    "fallback_channel_id": "",       // optional: channel to ping people whose DMs are closed ("" = off)
+    "log_channel_id": ""             // optional: after each live run that sent anything, the bot posts a "run report" here listing exactly who was DMed / what was announced - so you never need the GitHub log for day-to-day visibility ("" = off)
   },
   "raidhelper": {
     "server_id": "123..."            // same server ID
