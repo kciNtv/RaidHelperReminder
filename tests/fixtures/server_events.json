@@ -1,0 +1,37 @@
+{
+  "pages": 1,
+  "currentPage": 1,
+  "eventCountOverall": 2,
+  "eventCountTransmitted": 2,
+  "postedEvents": [
+    {
+      "id": "1111111111111111111",
+      "serverId": "9999999999999999999",
+      "channelId": "2222222222222222222",
+      "channelName": "team-a-signups",
+      "templateId": "5",
+      "title": "Karazhan - Team A",
+      "startTime": 1767225600,
+      "endTime": 1767236400,
+      "closingTime": 1767225600,
+      "signUps": [
+        { "userId": "100", "name": "Tankadin", "className": "Paladin", "specName": "Protection" },
+        { "userId": "101", "name": "Shadowmike", "className": "Priest", "specName": "Shadow" },
+        { "userId": "102", "name": "Flaky", "className": "Tentative", "specName": "Tentative" },
+        { "userId": "103", "name": "OnBench", "className": "Bench", "specName": "Bench" }
+      ]
+    },
+    {
+      "id": "3333333333333333333",
+      "serverId": "9999999999999999999",
+      "channelId": "4444444444444444444",
+      "channelName": "raid-signups",
+      "templateId": "5",
+      "title": "Gruul Sunday",
+      "startTime": 1767398400,
+      "endTime": 1767409200,
+      "closingTime": 1767398400,
+      "signUps": []
+    }
+  ]
+}

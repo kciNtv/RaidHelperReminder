@@ -1,0 +1,53 @@
+{
+  "_comment": "Copy this file to config.json and fill in your ids. Everything the bot does is controlled from here - no code changes needed. See docs/GUIDE.md for a full explanation of every field.",
+
+  "discord": {
+    "guild_id": "YOUR_DISCORD_SERVER_ID",
+    "fallback_channel_id": ""
+  },
+
+  "raidhelper": {
+    "server_id": "YOUR_DISCORD_SERVER_ID"
+  },
+
+  "_comment_audiences": "Who is EXPECTED at events. Any mix of: role_ids (recommended), user_ids (explicit list), channel_access (everyone who can see that channel - the workaround when channels don't map to roles).",
+  "audiences": {
+    "default": { "role_ids": ["RAIDER_ROLE_ID"] },
+    "teamA":   { "role_ids": ["TEAM_A_ROLE_ID"] },
+    "teamB":   { "role_ids": ["TEAM_B_ROLE_ID"] }
+  },
+
+  "_comment_rules": "Which audience each event gets. First match wins; no match = default. Two teams x two raids a week = point each team's signup channel (or title keyword) at its audience.",
+  "audience_rules": [
+    { "match": { "channel_id": "TEAM_A_SIGNUP_CHANNEL_ID" }, "audience": "teamA" },
+    { "match": { "channel_id": "TEAM_B_SIGNUP_CHANNEL_ID" }, "audience": "teamB" }
+  ],
+
+  "_comment_windows": "Hours-before-start at which sign-up reminders fire. [168] + the Friday-only schedule in remind.yml = one reminder per event per week, sent Friday 5PM ET.",
+  "reminder_windows_hours": [168],
+
+  "_comment_digest": "true = members missing from SEVERAL events get ONE combined DM listing them all, instead of one DM per event.",
+  "digest_dms": true,
+
+  "messages": {
+    "default": "Hey {member_name}! You haven't signed up for **{event_title}** yet. It starts {event_time} ({event_time_relative}). Sign up here: {signup_link}",
+    "digest_header": "Hey {member_name}! You haven't signed up for these upcoming raids yet:",
+    "digest_line": "- **{event_title}** {event_time} ({event_time_relative}) - sign up: {signup_link}",
+    "fallback": "(couldn't DM you) You have upcoming raids you haven't signed up for - please check the signup channels!",
+    "per_window": {}
+  },
+
+  "_comment_announcements": "Channel messages posted N minutes before each event starts, in the event's own channel (or channel_id override). Optional match scopes an announcement to certain events.",
+  "announcements": [
+    {
+      "minutes_before": 15,
+      "mention_role_ids": ["RAIDER_ROLE_ID"],
+      "text": "Raid invites has started for tonight's raid. Please have your gear and consumes. Whisper Kcin or an Officer for an invite!"
+    }
+  ],
+
+  "_comment_no_response": "Sign-up types that should STILL be nagged. Empty = anyone who clicked anything (Bench/Late/Tentative/Absence) is left alone.",
+  "treat_as_no_response": [],
+
+  "dry_run": false
+}
