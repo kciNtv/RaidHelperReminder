@@ -44,6 +44,27 @@ Features:
 > to collect and where it goes, exactly where secrets and variables are
 > placed, and the ordered test plan with pass conditions.
 
+### Live progress tracker
+
+*Last updated: **July 17, 2026** — go-live testing in progress. This table is
+kept current as each step completes; details for every step are in the
+numbered list below and in [docs/HANDOFF.md](docs/HANDOFF.md).*
+
+| # | Step | Status |
+|---|------|--------|
+| 1 | Create the Discord bot (token copied, **Server Members Intent** on) | 🔄 in progress today |
+| 2 | Invite the bot to the server (needs Manage Server — else send invite URL to guild leader) | ⬜ |
+| 3 | Get the Raid-Helper API key (`/apikey` → show; needs elevated perms) | 📨 asking guild leader |
+| 4 | Collect IDs: server, team roles, @raiders role, signup channels | 🔄 in progress today |
+| 5 | Add repo secrets `DISCORD_BOT_TOKEN` + `RAIDHELPER_API_KEY` | ⬜ |
+| 6 | Commit real `config.json` | ⬜ |
+| 7 | Enable the Actions workflow | ⬜ |
+| 8 | Dry-run (HANDOFF 5.2) — proves secrets + IDs, sends nothing | ⬜ |
+| 9 | Live DM smoke test to one person only (HANDOFF 5.3) | ⬜ |
+| 10 | Duplicate-suppression re-run (HANDOFF 5.4) | ⬜ |
+| 11 | Announcement smoke test (HANDOFF 5.5) | ⬜ |
+| 12 | Restore real config — **live** (HANDOFF 5.6–5.7) | ⬜ |
+
 **Status right now:** all code and docs are in place and tested. The Actions
 workflow is **manually disabled** so it doesn't fail-and-email every 15
 minutes while the secrets are missing. Remaining steps, in order:
