@@ -10,11 +10,11 @@
     "server_id": "1349830753403539679"
   },
 
-  "_comment_audiences": "Who is EXPECTED at events. teamRed = Raid Team Red, teamBlue = Raid Team Blue. default (the @raiders role) covers any event whose channel is not listed in audience_rules below.",
+  "_comment_audiences": "SMOKE TEST CONFIG (HANDOFF 5.3) - ALL audiences temporarily point at Mike's user id only, so exactly one test DM goes to him and nobody else. Real audiences (restore after test): default/@raiders 1361002868781351152, teamRed 1527492157483520060, teamBlue 1527492255462719568.",
   "audiences": {
-    "default":  { "role_ids": ["1361002868781351152"] },
-    "teamRed":  { "role_ids": ["1527492157483520060"] },
-    "teamBlue": { "role_ids": ["1527492255462719568"] }
+    "default":  { "user_ids": ["123180705864876035"] },
+    "teamRed":  { "user_ids": ["123180705864876035"] },
+    "teamBlue": { "user_ids": ["123180705864876035"] }
   },
 
   "_comment_rules": "Which audience each event gets, by the channel the signup was posted in. First match wins; no match = default. Red raids Tue + Thu, Blue raids Wed + Sun.",

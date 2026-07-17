@@ -58,9 +58,9 @@ numbered list below and in [docs/HANDOFF.md](docs/HANDOFF.md).*
 | 4 | Collect IDs: server, team roles, @raiders role, signup channels | ✅ July 17 — all 8 collected (Red: Tue+Thu, Blue: Wed+Sun) |
 | 5 | Add repo secrets `DISCORD_BOT_TOKEN` + `RAIDHELPER_API_KEY` | ✅ July 17 — both verified present |
 | 6 | Commit real `config.json` | ✅ July 17 — teamRed/teamBlue audiences, 4 channel rules, fallback off |
-| 7 | Enable the Actions workflow | ⬜ |
-| 8 | Dry-run (HANDOFF 5.2) — proves secrets + IDs, sends nothing | ⬜ |
-| 9 | Live DM smoke test to one person only (HANDOFF 5.3) | ⬜ |
+| 7 | Enable the Actions workflow | ✅ July 17 |
+| 8 | Dry-run (HANDOFF 5.2) — proves secrets + IDs, sends nothing | ✅ July 17 — 2 events, both audiences resolve, digest works. (Fixed en route: script needed a real User-Agent — Cloudflare 403 — and a fresh bot token after multiple resets) |
+| 9 | Live DM smoke test to one person only (HANDOFF 5.3) | 🔄 in progress — ALL audiences temporarily = Mike's user id |
 | 10 | Duplicate-suppression re-run (HANDOFF 5.4) | ⬜ |
 | 11 | Announcement smoke test (HANDOFF 5.5) | ⬜ |
 | 12 | Restore real config — **live** (HANDOFF 5.6–5.7) | ⬜ |

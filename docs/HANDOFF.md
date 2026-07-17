@@ -130,10 +130,16 @@ lines name the right people. Both secrets and all IDs are proven correct at
 this point. Nothing was sent.*
 
 **5.3 - Live DM smoke test (one person only).** In `config.json`, temporarily
-change ONE audience to `{ "user_ids": ["YOUR_OWN_DISCORD_USER_ID"] }` (right-click
+change **EVERY audience** (default, teamRed/teamA, teamBlue/teamB - all of
+them) to `{ "user_ids": ["YOUR_OWN_DISCORD_USER_ID"] }` (right-click
 your own name in the member list on the right side of any channel, or on one
 of your messages -> **Copy User ID**), commit, and Run workflow with mode
-`reminders`, dry_run OFF, while you are not signed up to that team's event.
+`reminders`, dry_run OFF, while you are not signed up to at least one
+upcoming event. *(Field-tested July 17, 2026: changing only ONE audience is
+not enough - any other team with an upcoming event would still DM its real
+members. All audiences must point at you during the test.)* Safest order:
+run once more WITH dry_run ticked first and confirm the log's only
+"[dry-run] would DM" line names you; then run with dry_run off.
 *Pass: exactly one DM arrives, to you, with correct event title, local time,
 and a working signup link. The run's final commit updates `state.json`.*
 
