@@ -214,17 +214,42 @@ Four ingredients, about 15 minutes total.
 
 ### 5.1 A Discord bot (sends the DMs and channel posts)
 
+*Field-tested July 17, 2026 — the warnings below are gotchas actually hit
+during the first real setup, kept here so the next person sails past them.*
+
 1. Go to https://discord.com/developers/applications (the "Discord Developer
    Portal" — log in with your normal Discord account) → **New Application**
-   (button, top right) → name it e.g. `Raid Reminder`.
+   (button, top right) → name it e.g. `Raid Reminder` → **Create**.
 2. Left sidebar → **Bot**:
-   - **Reset Token**, copy it. This is `DISCORD_BOT_TOKEN`. Treat it like a
-     password.
-   - Enable **Server Members Intent** (to list who has which role).
-3. Left sidebar → **OAuth2** → URL Generator: check `bot`; permissions:
-   **Send Messages** (that's all). Open the generated URL (bottom of the
-   page) and invite the bot to your server.
-4. If you use `channel_access` audiences or private signup channels, also give
+   - **Reset Token**. Discord will first demand **Multi-Factor
+     Authentication** (security key, 6-digit authenticator code, or a backup
+     code) — that's normal, complete it. The token is then shown **once**;
+     copy it immediately. This is `DISCORD_BOT_TOKEN`. Treat it like a
+     password. (Navigated away before copying? Just Reset Token again — the
+     newest token is the only one that works.)
+   - Scroll down to *Privileged Gateway Intents* → toggle ON **Server
+     Members Intent** (lets the bot list who has which role).
+     **⚠ GOTCHA:** a green **"Save Changes"** bar slides up at the very
+     BOTTOM of the page — you must click it, or the toggle silently reverts
+     when you leave. This is the #1 cause of the
+     `Discord members fetch returned 403` error.
+   - *Public Bot* toggle (same page, near the top): must be ON if someone
+     *other than you* (e.g. the server owner) will click the invite link in
+     step 4. Either setting works if you invite it yourself.
+3. Left sidebar → **OAuth2** → scroll to **OAuth2 URL Generator**: under
+   *Scopes*, tick the box labeled **`bot`** (ignore the others — a *Bot
+   Permissions* grid appears below once ticked) → in that grid tick
+   **View Channels** and **Send Messages** → copy the **Generated URL** at
+   the very bottom of the page.
+4. Paste that URL into your browser's address bar. Discord shows an "Add to
+   server" dropdown. **Adding a bot requires the Manage Server permission** —
+   if your server is missing from the dropdown, you don't have it; send the
+   same URL to someone who does (one click for them; the bot still belongs
+   to your Discord account). Pick the server → **Continue** → **Authorize**.
+5. Confirm it worked: back in Discord, the bot now appears in the server's
+   member list on the right (a grey/offline dot is normal — this bot never
+   shows "online"; it only wakes up when the schedule runs it).
+6. If you use `channel_access` audiences or private signup channels, also give
    the bot access to those channels.
 
 ### 5.2 The Raid-Helper API key
@@ -235,17 +260,30 @@ In Discord, typed in any channel's message box in your server: `/apikey` →
 
 ### 5.3 The IDs
 
-Enable Developer Mode (Discord: **User Settings** — the gear icon next to
-your username, bottom-left — → **Advanced** → **Developer Mode**; this adds
-the "Copy ID" options to right-click menus), then right-click to copy:
+One-time switch first: **User Settings** (the ⚙ gear next to your username,
+bottom-left of Discord) → **App Settings → Advanced** → toggle **Developer
+Mode** ON, then press **Esc** to close Settings. This adds a "Copy … ID"
+entry to right-click menus — it's always the **bottom item** of the menu.
 
-- **Server ID** (right-click the server name, very top of the left sidebar)
-- **Role IDs** for each team + the @raiders role for announcements
-  (click the server name → **Server Settings** → **Roles** → right-click the
-  role)
-- **Channel IDs** of each team's signup channel (right-click the channel in
-  the channel list, left side — for audience rules and/or `channel_access`),
-  plus optionally a fallback channel for people whose DMs are closed
+Each step below starts fresh from the main Discord window — if you're inside
+any settings screen, press Esc first:
+
+- **Server ID** — the far-left edge of Discord is a narrow vertical strip of
+  round icons, one per server. Right-click your server's round icon →
+  **Copy Server ID** (bottom of the menu).
+- **Role IDs** (each team's role + the @raiders role the announcement pings)
+  — click the server **name banner** (the bar at the top of the channel
+  list) → **Server Settings** → **Roles** (left sidebar) → in the role list,
+  right-click each role's *name* → **Copy Role ID**. Press Esc when done.
+- **Channel IDs** (each team's signup channel — one rule per channel, so
+  copy *every* signup channel a team uses; optionally also a fallback
+  channel for people whose DMs are closed) — in the channel list (the
+  column between the round-icons strip and the chat), right-click the
+  channel name → **Copy Channel ID**.
+- **Your own user ID** (used once, for the one-person live smoke test in
+  HANDOFF 5.3) — open any channel; the member list is the column on the far
+  right (if hidden, click the 👥 two-people icon in the top-right toolbar)
+  → right-click your own name → **Copy User ID**.
 
 ### 5.4 The config file
 
@@ -454,7 +492,7 @@ owner re-adds the two secrets (secrets don't transfer).
 | Nobody got DMed | Wrong role/channel ids, or nobody is missing | Dry run and read the log — it prints expected/responded/missing per event |
 | Wrong team reminded | An `audience_rules` entry matches too broadly | Rules run top-down, first match wins — reorder or tighten |
 | `Raid-Helper API returned 401/403` | API key wrong or refreshed | `/apikey` → show, update the secret |
-| `Discord members fetch returned 403` | Server Members Intent not enabled | Developer portal → Bot → enable it |
+| `Discord members fetch returned 403` | Server Members Intent toggled but never saved (the green "Save Changes" bar at the page's very bottom!), or the bot was invited to the wrong server | Developer portal → Bot → verify the toggle is ON *and* click Save Changes; confirm the bot appears in the correct server's member list. (A **401** instead of 403 = the token itself is wrong.) |
 | `channel fetch returned 403/404` | Bot can't see a `channel_access` channel | Give the bot access to that channel |
 | Officers/admins get nagged via `channel_access` | Admins see all channels | Use role-based audiences for those events |
 | One member never gets DMs | Their privacy settings block bot DMs | Set `fallback_channel_id` for a channel ping instead |
