@@ -53,15 +53,17 @@ minutes while the secrets are missing. Remaining steps, in order:
    **Server Members Intent**, invite it to the server with Send Messages only.
 2. **Get the Raid-Helper API key**: type `/apikey` in the Discord server,
    pick **show**.
-3. **Add both as repo secrets**: Settings → Secrets and variables → Actions →
+3. **Add both as repo secrets**: **Settings** (right-most tab at the top of
+   this page) → **Secrets and variables → Actions** →
    `DISCORD_BOT_TOKEN` and `RAIDHELPER_API_KEY`.
 4. **Commit a real `config.json`**: copy `config.example.json`, fill in the
    server ID, team role/channel IDs, and the @raiders role ID for
    announcements ([docs/GUIDE.md section 7](docs/GUIDE.md) explains every field).
-5. **Enable the workflow**: Actions tab → "Send signup reminders" →
-   Enable workflow.
-6. **Dry-run first**: Actions tab → Run workflow → tick **dry_run** → read
-   the log; it prints exactly who would get what without sending anything.
+5. **Enable the workflow**: **Actions** tab (top of this page) → "Send
+   signup reminders" → "…" menu → Enable workflow.
+6. **Dry-run first**: Actions tab → **Run workflow** button → tick
+   **dry_run** → read the run's log; it prints exactly who would get what
+   without sending anything.
 7. **Live smoke test**: set one audience's `user_ids` to just your own
    Discord ID, run for real, confirm the DM arrives, then restore the real
    config.

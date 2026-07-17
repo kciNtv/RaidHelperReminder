@@ -94,9 +94,11 @@ configured on your server — this section is the checklist to verify.
 Premium feature "Recurring Events" — *"let the bot create your regular events
 automatically."* Set each raid night up once as a weekly recurring event:
 
-- Create each raid night's event via `/create` (or the web dashboard at
-  raid-helper.dev — easier for this) and enable **recurring / weekly repeat**
-  in the event options.
+- Create each raid night's event via `/create` (typed in the signup
+  channel's message box in Discord) — or, easier for this, the Raid-Helper
+  web dashboard: **raid-helper.dev** -> Login (top right, with your Discord
+  account) -> your server. Enable **recurring / weekly repeat** in the event
+  options.
 - Each recurring series controls when the next occurrence gets posted, so the
   new week's signups appear on schedule without anyone touching anything.
 - Four raid nights (e.g. Team A Tue/Thu, Team B Wed/Sun) = four recurring
@@ -106,7 +108,8 @@ automatically."* Set each raid night up once as a weekly recurring event:
 
 The `response` **advanced setting** (premium): *"Sends members the specified
 text or embed via DM after successful Sign-Up."* In the event's advanced
-options (dashboard or event dialog), set for example:
+options (on the web dashboard: open the event -> advanced settings; or in
+Discord during `/create` / via `/edit`), set for example:
 
 ```
 < response: Thanks for signing up! Make sure you have your gear enchanted and full consumes - see the #consume-faq channel. >
@@ -211,32 +214,38 @@ Four ingredients, about 15 minutes total.
 
 ### 5.1 A Discord bot (sends the DMs and channel posts)
 
-1. https://discord.com/developers/applications → **New Application** → name it
-   e.g. `Raid Reminder`.
-2. Left menu → **Bot**:
+1. Go to https://discord.com/developers/applications (the "Discord Developer
+   Portal" — log in with your normal Discord account) → **New Application**
+   (button, top right) → name it e.g. `Raid Reminder`.
+2. Left sidebar → **Bot**:
    - **Reset Token**, copy it. This is `DISCORD_BOT_TOKEN`. Treat it like a
      password.
    - Enable **Server Members Intent** (to list who has which role).
-3. Left menu → **OAuth2** → URL Generator: check `bot`; permissions: **Send
-   Messages** (that's all). Open the URL, invite the bot to your server.
+3. Left sidebar → **OAuth2** → URL Generator: check `bot`; permissions:
+   **Send Messages** (that's all). Open the generated URL (bottom of the
+   page) and invite the bot to your server.
 4. If you use `channel_access` audiences or private signup channels, also give
    the bot access to those channels.
 
 ### 5.2 The Raid-Helper API key
 
-In Discord: `/apikey` → **show**. That's `RAIDHELPER_API_KEY`.
+In Discord, typed in any channel's message box in your server: `/apikey` →
+**show** (the reply is visible only to you). That's `RAIDHELPER_API_KEY`.
 (Leaked? `/apikey` → **refresh** invalidates the old one.)
 
 ### 5.3 The IDs
 
-Enable Developer Mode (User Settings → Advanced), then right-click to copy:
+Enable Developer Mode (Discord: **User Settings** — the gear icon next to
+your username, bottom-left — → **Advanced** → **Developer Mode**; this adds
+the "Copy ID" options to right-click menus), then right-click to copy:
 
-- **Server ID** (right-click server name)
+- **Server ID** (right-click the server name, very top of the left sidebar)
 - **Role IDs** for each team + the @raiders role for announcements
-  (Server Settings → Roles → right-click role)
-- **Channel IDs** of each team's signup channel (for audience rules and/or
-  `channel_access`), plus optionally a fallback channel for people whose DMs
-  are closed
+  (click the server name → **Server Settings** → **Roles** → right-click the
+  role)
+- **Channel IDs** of each team's signup channel (right-click the channel in
+  the channel list, left side — for audience rules and/or `channel_access`),
+  plus optionally a fallback channel for people whose DMs are closed
 
 ### 5.4 The config file
 
@@ -275,7 +284,8 @@ Free, no server, every run leaves a readable log.
 1. This repository already contains everything — if you're reading this on
    GitHub, this step is done. (Starting fresh instead: create a **private
    repository** and upload the project files.)
-2. Repo → Settings → Secrets and variables → Actions → add
+2. **Settings** (right-most tab in the row along the top of the project
+   page) → left sidebar: **Secrets and variables → Actions** → add
    `DISCORD_BOT_TOKEN` and `RAIDHELPER_API_KEY`.
 3. Done. `.github/workflows/remind.yml` already schedules:
    - **announcements every 15 minutes** (so the "invites started" post lands
@@ -288,8 +298,9 @@ Notes:
 - GitHub's scheduler can drift a few minutes at busy times. For the 8:15PM
   announcement that means "8:15-and-change" — if exact-to-the-minute matters,
   host on a PC (Option B) where Task Scheduler is precise.
-- The **Actions** tab shows every run; **Run workflow** with *dry run* ticked
-  is the safe test button.
+- The **Actions** tab (same top tab row as Settings) shows every run;
+  **Run workflow** (grey button on the workflow's page) with *dry run*
+  ticked is the safe test button.
 - After each send, the workflow commits `state.json` back — a readable audit
   log of who was reminded when.
 - Scheduled workflows on free accounts pause after ~60 days without repo
@@ -426,14 +437,15 @@ what. For a live test, set an audience's `user_ids` to just your own account.
 Entries clean themselves up a day after each event. Deleting the file is safe
 — worst case, one extra reminder for events currently in a window.
 
-**Pausing** — GitHub: Actions → the workflow → "…" → Disable workflow.
+**Pausing** — GitHub: **Actions** tab → the workflow (left sidebar) → **"…"** menu (top right) → **Disable workflow**.
 PC: `schtasks /Change /TN "RaidReminders" /DISABLE` (and the announcements task).
 
 **Rotating secrets** — bot token: developer portal → Bot → Reset Token, update
 the secret. API key: `/apikey` → refresh, update the secret.
 
-**Handing it to a new owner** — transfer the GitHub repo (Settings →
-Transfer); the new owner re-adds the two secrets (secrets don't transfer).
+**Handing it to a new owner** — transfer the GitHub repo (**Settings** tab →
+**General** → scroll to *Danger Zone* → **Transfer ownership**); the new
+owner re-adds the two secrets (secrets don't transfer).
 
 ### Troubleshooting
 

@@ -44,13 +44,13 @@ Gather these eight values before touching anything else.
 
 | # | Value | Where to get it | Where it goes |
 |---|---|---|---|
-| 1 | **Discord bot token** | discord.com/developers/applications -> New Application (name it e.g. "Raid Reminder") -> Bot -> Reset Token. While there: enable **Server Members Intent** (same page, Privileged Gateway Intents). Then OAuth2 -> URL Generator -> check `bot` + permission **Send Messages** -> open the URL to invite it to the server. | Secret `DISCORD_BOT_TOKEN` (section 3) |
-| 2 | **Raid-Helper API key** | In your Discord server type `/apikey`, pick **show**. Raid-Helper replies privately. | Secret `RAIDHELPER_API_KEY` (section 3) |
-| 3 | **Server ID** | Discord: User Settings -> Advanced -> enable Developer Mode. Then right-click the server name -> Copy Server ID. | `config.json`: `discord.guild_id` AND `raidhelper.server_id` (same value in both) |
-| 4 | **Team A role ID** | Server Settings -> Roles -> right-click the role -> Copy Role ID | `config.json`: `audiences.teamA.role_ids` |
+| 1 | **Discord bot token** | Go to **discord.com/developers/applications** (the "Discord Developer Portal" - a website; log in with your normal Discord account) -> **New Application** button (top right; name it e.g. "Raid Reminder") -> **Bot** (left sidebar) -> **Reset Token** button. While on that Bot page: scroll to *Privileged Gateway Intents* and enable **Server Members Intent**. Then **OAuth2** (left sidebar) -> *URL Generator* -> check `bot` + permission **Send Messages** -> open the generated URL (bottom of page) to invite the bot to your server. | Secret `DISCORD_BOT_TOKEN` (section 3) |
+| 2 | **Raid-Helper API key** | In the Discord app, in any channel's message box in your server, type `/apikey` and pick **show**. Raid-Helper replies with a message only you can see. | Secret `RAIDHELPER_API_KEY` (section 3) |
+| 3 | **Server ID** | Discord app: **User Settings** (gear icon next to your username, bottom-left) -> **Advanced** -> enable **Developer Mode** (one-time; it adds the "Copy ID" right-click options used below). Then right-click the **server name** (very top of the left sidebar) -> **Copy Server ID**. | `config.json`: `discord.guild_id` AND `raidhelper.server_id` (same value in both) |
+| 4 | **Team A role ID** | Discord app: click the server name (top-left) -> **Server Settings** -> **Roles** -> right-click the role -> **Copy Role ID** | `config.json`: `audiences.teamA.role_ids` |
 | 5 | **Team B role ID** | same | `config.json`: `audiences.teamB.role_ids` |
 | 6 | **@raiders role ID** (the role the 8:15 announcement pings) | same | `config.json`: `announcements[0].mention_role_ids` |
-| 7 | **Team A + Team B signup channel IDs** | Right-click each signup channel -> Copy Channel ID | `config.json`: `audience_rules` (routes each event to the right team) |
+| 7 | **Team A + Team B signup channel IDs** | Discord app: right-click each signup channel (in the channel list, left side) -> **Copy Channel ID** | `config.json`: `audience_rules` (routes each event to the right team) |
 | 8 | *(optional)* **Fallback channel ID** (public ping for members whose DMs are closed) | same | `config.json`: `discord.fallback_channel_id` ("" = feature off) |
 
 > If channel access does NOT line up with team roles, an audience can instead
@@ -65,7 +65,7 @@ Gather these eight values before touching anything else.
 **GitHub (the hosting we set up):**
 
 1. Open the repo on github.com
-2. **Settings** (repo settings, not account) **-> Secrets and variables -> Actions -> New repository secret**
+2. Click **Settings** - the right-most tab in the row along the top of the project page (Code / Issues / ... / Settings). This is the *project's* settings, not your account's. Then in the left sidebar: **Secrets and variables -> Actions -> New repository secret** (green button).
 3. Create exactly these two, names must match character-for-character:
    - Name: `DISCORD_BOT_TOKEN` - Value: the bot token
    - Name: `RAIDHELPER_API_KEY` - Value: the API key
@@ -79,14 +79,14 @@ new owner re-adds them (2 minutes, by design).
 is gitignored and never leaves the machine.
 
 Never put either value in `config.json`, in a commit, or in Discord chat.
-If a value ever leaks: bot token -> developer portal -> Bot -> Reset Token;
+If a value ever leaks: bot token -> Discord Developer Portal (discord.com/developers/applications, same site as value 1) -> Bot -> Reset Token;
 API key -> `/apikey` -> refresh. Then update the secret.
 
 ---
 
 ## 4. Where the VARIABLES go (values 3-8 - the config file)
 
-Create `config.json` in the repo root — entirely in the browser: open
+Create `config.json` in the repo root (root = the top-level file list you see on the project's front page, next to README) — entirely in the browser: open
 `config.example.json`, copy its contents, then repo front page -> **Add file
 -> Create new file**, name it `config.json`, paste, replace the placeholder
 IDs with values 3-8, and click **Commit changes** (commit = save; see
@@ -116,21 +116,23 @@ deployment process.
 Each step has a pass condition. Stop at any failure and check the
 troubleshooting table in [GUIDE.md section 8](GUIDE.md).
 
-**5.1 - Enable the workflow.** Actions tab -> "Send signup reminders" ->
-"..." menu -> Enable workflow.
+**5.1 - Enable the workflow.** **Actions** tab (in the same top tab row as Settings) -> **Send signup reminders** (left sidebar) -> the **"..."** menu (top right, next to the search box) -> **Enable workflow**.
 *Pass: the workflow shows as enabled.*
 
 **5.2 - Dry run (sends nothing, ever).** Actions tab -> Send signup
-reminders -> **Run workflow** -> mode `all`, tick **dry_run** -> Run. Open
-the run's log.
+reminders -> **Run workflow** (grey dropdown button on the right side of the
+blue banner) -> mode `all`, tick **dry_run** -> green **Run workflow**. The
+run appears in the list after a few seconds; click it, then click the
+**remind** job to read the log.
 *Pass: the log lists each upcoming event with "N expected, N responded,
 N missing" using numbers that match reality, and "[dry-run] would DM ..."
 lines name the right people. Both secrets and all IDs are proven correct at
 this point. Nothing was sent.*
 
 **5.3 - Live DM smoke test (one person only).** In `config.json`, temporarily
-change ONE audience to `{ "user_ids": ["YOUR_OWN_DISCORD_USER_ID"] }` (right-
-click your name -> Copy User ID), commit, and Run workflow with mode
+change ONE audience to `{ "user_ids": ["YOUR_OWN_DISCORD_USER_ID"] }` (right-click
+your own name in the member list on the right side of any channel, or on one
+of your messages -> **Copy User ID**), commit, and Run workflow with mode
 `reminders`, dry_run OFF, while you are not signed up to that team's event.
 *Pass: exactly one DM arrives, to you, with correct event title, local time,
 and a working signup link. The run's final commit updates `state.json`.*
@@ -139,7 +141,7 @@ and a working signup link. The run's final commit updates `state.json`.*
 *Pass: log says nothing new to send; no second DM.*
 
 **5.5 - Announcement smoke test.** Within 15 minutes before a raid start
-(or create a throwaway test event starting in ~10 minutes), Run workflow with
+(or create a throwaway test event starting in ~10 minutes, with Raid-Helper's `/create` in any private test channel), Run workflow with
 mode `announcements`, dry_run OFF.
 *Pass: one message appears in the event's signup channel pinging @raiders
 with the "Raid invites has started..." text. Re-running posts no duplicate.*
@@ -153,7 +155,7 @@ their digest DM, 8:15 PM the invite announcement posts, attendance tracks
 in Raid-Helper. Zero manual steps per event.
 
 *(Optional 5.8 - fallback ping: have a member disable "Direct Messages from
-server members", leave them unsigned, run reminders. Pass: they get publicly
+server members" (Discord: click the server name -> **Privacy Settings** -> toggle off **Direct Messages**), leave them unsigned, run reminders. Pass: they get publicly
 pinged in the fallback channel instead.)*
 
 ---
@@ -167,7 +169,10 @@ pinged in the fallback channel instead.)*
 - [ ] `attendance` is on (default) - optionally tag per team
       (`< attendance: teamA >`) for per-team `/attendance` stats.
 
-Details for all three: [GUIDE.md section 2](GUIDE.md).
+All three are set in each event's *advanced options* - easiest via the
+Raid-Helper web dashboard (**raid-helper.dev** -> Login, top right, with your
+Discord account -> your server -> the event), or with the `/edit` command in
+Discord. Details for all three: [GUIDE.md section 2](GUIDE.md).
 
 ---
 
