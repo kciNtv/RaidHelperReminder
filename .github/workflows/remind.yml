@@ -1,6 +1,10 @@
 # Two schedules, one script:
-#   - Every 15 minutes -> announcements mode (the "invites started" post needs
-#     minute-level timing; reminders don't).
+#   - Every 15 minutes during the evening raid window -> announcements mode
+#     (the "invites started" post needs minute-level timing; reminders don't).
+#     21:00-03:59 UTC = 5PM-11:59PM EDT / 4PM-10:59PM EST - wide enough for
+#     any evening raid with a 60-75 min announcement lead. Running all day
+#     would cost ~2,900 Actions minutes/month (over the 2,000 free for
+#     private repos); the evening window costs ~870.
 #   - Friday 5PM Eastern -> reminders mode (the weekly "you haven't signed up"
 #     DMs). GitHub cron is UTC and can't follow US daylight saving, so BOTH
 #     possible UTC times are scheduled; state.json dedup makes the second one
@@ -16,7 +20,7 @@ name: Send signup reminders
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # announcements (raid-time channel posts)
+    - cron: "*/15 0-3,21-23 * * *"   # announcements (evening raid window, see above)
     - cron: "0 21 * * 5"     # reminders: Friday 5PM EDT (summer)
     - cron: "0 22 * * 5"     # reminders: Friday 5PM EST (winter)
   workflow_dispatch:
@@ -57,11 +61,11 @@ jobs:
             MODE="${{ inputs.mode }}"
             EXTRA=""
             [ "${{ inputs.dry_run }}" = "true" ] && EXTRA="--dry-run"
-          elif [ "${{ github.event.schedule }}" = "*/15 * * * *" ]; then
-            MODE="announcements"
+          elif [ "${{ github.event.schedule }}" = "0 21 * * 5" ] || [ "${{ github.event.schedule }}" = "0 22 * * 5" ]; then
+            MODE="reminders"
             EXTRA=""
           else
-            MODE="reminders"
+            MODE="announcements"
             EXTRA=""
           fi
           echo "Running mode: $MODE $EXTRA"
