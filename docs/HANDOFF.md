@@ -5,6 +5,11 @@ left to test, and exactly where every secret and variable goes. Work through
 it top to bottom. For background on *how* anything works, see
 [GUIDE.md](GUIDE.md) — but this checklist stands on its own.
 
+**Never used GitHub?** Read [GITHUB-BASICS.md](GITHUB-BASICS.md) first
+(5 minutes). Every step below — editing the config, adding secrets, running
+tests — is done in the web browser with normal buttons; that page shows
+exactly which buttons. Nothing to install, no command line.
+
 **Verifying the original asks were met?** [GUIDE.md section 1](GUIDE.md)
 restates the five original requirements verbatim (recurring signups, Friday
 5PM non-signer reminders, gear/consumes DM on signup, the 8:15PM "invites
@@ -81,8 +86,12 @@ API key -> `/apikey` -> refresh. Then update the secret.
 
 ## 4. Where the VARIABLES go (values 3-8 - the config file)
 
-Copy `config.example.json` to `config.json` (in the repo root), replace the
-placeholder IDs with values 3-8, and commit it. The example file is already
+Create `config.json` in the repo root — entirely in the browser: open
+`config.example.json`, copy its contents, then repo front page -> **Add file
+-> Create new file**, name it `config.json`, paste, replace the placeholder
+IDs with values 3-8, and click **Commit changes** (commit = save; see
+[GITHUB-BASICS.md](GITHUB-BASICS.md)). All later edits use the pencil icon
+on the file. The example file is already
 shaped for this exact setup - two teams, Friday digest reminders, the 8:15
 "invites started" announcement with the Kcin wording - so it's fill-in-the-
 blanks, not authoring. Every field is explained in

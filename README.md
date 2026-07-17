@@ -1,5 +1,12 @@
 # RaidHelperReminder
 
+> **First time here? Never used GitHub before? No problem — start with
+> [docs/GITHUB-BASICS.md](docs/GITHUB-BASICS.md)** (5 minutes: the only four
+> things you'll ever do on this site, all in the browser, nothing to
+> install). Then [docs/HANDOFF.md](docs/HANDOFF.md) is the step-by-step
+> checklist to get this running, and [docs/GUIDE.md](docs/GUIDE.md) explains
+> how everything works and how it meets the original requirements.
+
 Automates the two things [Raid-Helper](https://raid-helper.dev) can't do by
 itself:
 
@@ -83,5 +90,7 @@ secrets (secrets never transfer, by design).
 | `state.json` | Auto-managed memory of everything already sent |
 | `.github/workflows/remind.yml` | GitHub Actions schedules (announcements every 15 min; reminders Friday 5PM ET) |
 | `run_local.ps1` + `secrets.example.env` | Windows / Task Scheduler alternative |
+| `docs/GITHUB-BASICS.md` | GitHub for first-timers — the four browser-only actions you'll ever need |
+| `docs/HANDOFF.md` | The go-live/handover checklist: values, secrets, ordered test plan |
 | `docs/GUIDE.md` | The full how-to and operations guide |
 | `tests/` | Unit tests: `python -m unittest discover tests` |

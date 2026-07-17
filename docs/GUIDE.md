@@ -407,8 +407,10 @@ picks it up. No code edits, ever.
 
 ## 8. Maintenance and operations
 
-**Changing anything** (teams, times, wording): edit `config.json`,
-commit/save. Next run uses it. That's the whole deployment process.
+**Changing anything** (teams, times, wording): edit `config.json` in the
+browser (pencil icon on the file) and click Commit changes - that's a save
+with a note. Next run uses it. That's the whole deployment process.
+(GitHub-new? [GITHUB-BASICS.md](GITHUB-BASICS.md) shows every button.)
 
 **Did it run?** GitHub: Actions tab → open a run → read the log ("Fetched 4
 upcoming events... 3 missing... DM sent to ..."). PC: Task Scheduler history,
