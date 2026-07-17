@@ -58,6 +58,13 @@ def http_json(method, url, headers=None, body=None, max_retries=4):
     """
     data = None
     headers = dict(headers or {})
+    # Discord's docs require a real User-Agent; its edge (Cloudflare) can
+    # reject data-center requests carrying urllib's default one with an
+    # HTML 403 that never reaches the API proper.
+    headers.setdefault(
+        "User-Agent",
+        "RaidHelperReminder (https://github.com/superrcharge/RaidHelperReminder, 1.0)",
+    )
     if body is not None:
         data = json.dumps(body).encode("utf-8")
         headers["Content-Type"] = "application/json"
@@ -72,7 +79,9 @@ def http_json(method, url, headers=None, body=None, max_retries=4):
             try:
                 payload = json.loads(raw) if raw else None
             except json.JSONDecodeError:
-                payload = None
+                # Not JSON (e.g. a Cloudflare block page). Surface a snippet
+                # of the raw body so error messages say what actually happened.
+                payload = raw.decode("utf-8", "replace")[:300]
             if e.code == 429 and attempt < max_retries - 1:
                 retry_after = 2.0
                 if isinstance(payload, dict):
