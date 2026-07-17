@@ -66,7 +66,7 @@ numbered list below and in [docs/HANDOFF.md](docs/HANDOFF.md).*
 | 9 | Live DM smoke test to one person only (HANDOFF 5.3) | ✅ July 17 — "1 DM(s) sent", to Mike alone; state.json committed by the run |
 | 10 | Duplicate-suppression re-run (HANDOFF 5.4) | ✅ July 17 — same run again: "0 DM(s) sent" |
 | 11 | Announcement smoke test (HANDOFF 5.5) | ✅ July 17 — 2 posts to test channel, re-run posts 0; bot channel-access failure found+fixed en route |
-| 12 | Restore real config — **live** (HANDOFF 5.6–5.7) | 🔄 announcements restored to real; audiences still Mike-only pending go-live decision with guild leader |
+| 12 | Restore real config — **live** (HANDOFF 5.6–5.7) | 🔄 Announcements: KEEPING automated raid-time posts (60 min before, decided July 17). Audiences still Mike-only — the one remaining switch, pending go-live date with guild leader |
 
 **Status right now:** all code and docs are in place and tested. The Actions
 workflow is **manually disabled** so it doesn't fail-and-email every 15
