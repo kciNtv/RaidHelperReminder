@@ -188,7 +188,7 @@ so the old owner isn't a hidden dependency forever.
       - `RAIDHELPER_API_KEY` — in Discord type `/apikey` → **show**
         (needs admin; you have it). If the key might have been shared
         during setup, run `/apikey` → **refresh** first and use the new one.
-- [ ] **D2 — verify everything [new owner]** — **Actions** tab → *Send
+- [x] **D2 — verify everything [new owner]** — **Actions** tab → *Send
       signup reminders* → **Run workflow** → mode `all`, tick **dry_run** →
       open the run → `remind` job.
       *Pass: "Fetched N upcoming event(s)", realistic expected/responded/
