@@ -35,6 +35,11 @@ what the bot does, every setting explained, operations, troubleshooting.
 
 ## 2. Go-live: flip the audiences to the real teams
 
+> **Agreed order (July 17, 2026): ownership transfers FIRST (section 3),
+> then going live is the new owner's first act** — run this section as the
+> new owner, ideally right after phase E proves the console works. Nothing
+> below changes either way.
+
 Doing this arms the system for the whole guild: the next Friday 5PM ET run
 DMs every real non-signer, and raid-time announcements post in the real
 signup channels. Two prerequisites, then a two-minute edit.
