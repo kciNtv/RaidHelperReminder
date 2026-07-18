@@ -8,9 +8,11 @@
 #
 # Schedule: every 15 minutes during the evening raid window.
 # 21:00-03:59 UTC = 5PM-11:59PM EDT / 4PM-10:59PM EST - wide enough for any
-# evening raid with a 60-75 min announcement lead. Running all day would cost
-# ~2,900 Actions minutes/month (over the 2,000 free for private repos); the
-# evening window costs ~870 for both workflows combined.
+# evening raid with an hour-scale announcement lead (the lead itself is
+# config.json's announcements[].minutes_before; the post lands on the first
+# check inside that window). Running all day would cost ~2,900 Actions
+# minutes/month (over the 2,000 free for private repos); the evening window
+# costs ~870.
 
 name: Raid-time announcements
 
