@@ -74,6 +74,11 @@ signup channels. Two prerequisites, then a two-minute edit.
 
 ## 3. Ownership transfer to the guild leader
 
+**Target end state:** the guild leader **owns** the repo (and everything
+with it: secrets, settings, the bot's config); the previous owner stays on
+as a **write collaborator** — able to edit config, run workflows, and help,
+but no longer the person anything depends on.
+
 Work top to bottom; each phase has a pass condition. Rough total: 30–40
 minutes, all in the browser. Steps marked **[old owner]** are done by Mike,
 **[new owner]** by the guild leader.
@@ -127,8 +132,18 @@ about his day-to-day.
       *Pass: the repo now shows under YOUR account, at
       github.com/YOUR-NAME/RaidHelperReminder.*
 - [ ] **B3 — know what did NOT transfer** (by design, both of you):
-      the two **secrets** (phase D re-adds them) and the **Discord bot**
-      (owned by the old owner's Discord account — phase C replaces it).
+      the two **secrets** (phase D re-adds them), the **Discord bot**
+      (owned by the old owner's Discord account — phase C replaces it),
+      and the **old owner's access** — transferring removes it.
+- [ ] **B4 [new owner]** — add the old owner back as a **collaborator** so
+      he can keep helping: repo → **Settings** → **Collaborators** →
+      **Add people** → `superrcharge` → Add; old owner accepts the email
+      invite. (Same mechanics as phase 0.2, roles reversed. He gets write
+      access; owner-only powers are now yours alone.)
+      *Note for the old owner: your console sign-in also flips — the repo
+      is no longer yours, so your fine-grained token stops working. Use the
+      classic-token path from step 0.5 if you still want console access,
+      and set Repo owner to the NEW owner's username.*
 
 ### Phase C — new owner's own Discord bot (10 min)
 
