@@ -48,10 +48,10 @@ signup channels. Two prerequisites, then a two-minute edit.
       line: *"New bot: if you haven't signed up for a raid by Friday
       afternoon, it will DM you a reminder. Sign up and it leaves you
       alone."*) so ~40 people aren't surprised by a first-time DM.
-- [ ] **2.2 — Pick the go-live moment.** Any time before the Friday 5PM ET
+- [x] **2.2 — Pick the go-live moment.** Any time before the Friday 5PM ET
       run works; flipping mid-week simply means the coming Friday is the
       first real send.
-- [ ] **2.3 — Make the edit** (either way):
+- [x] **2.3 — Make the edit** (either way):
       - **Console:** open the [settings console](https://kcintv.github.io/raid-console/)
         → *Teams & audiences* → for each team, clear the **user IDs** box and
         set the **Role IDs** box: `default` → `1361002868781351152` (@raiders),
@@ -61,7 +61,7 @@ signup channels. Two prerequisites, then a two-minute edit.
       - **GitHub:** edit `config.json` (pencil icon), make the same three
         role_ids changes in the `audiences` block (the correct values are
         also written in the `_comment_audiences` line right above it).
-- [ ] **2.4 — Verify with a dry run** (sends nothing): console → **Trigger
+- [x] **2.4 — Verify with a dry run** (sends nothing): console → **Trigger
       dry run**, or Actions tab → *Send signup reminders* → Run workflow →
       tick dry_run. Open the newest run → `remind` job.
       *Pass: each upcoming raid shows realistic "N expected, N responded,
