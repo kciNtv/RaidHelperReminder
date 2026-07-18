@@ -108,13 +108,26 @@ about his day-to-day.
         **Run workflow** → tick **dry_run** → read the log.
       - **See what happened:** Actions tab logs + the officers-chat reports.
 - [ ] **0.5 [new owner, optional]** — to use the **settings console**
-      before the transfer: GitHub's fine-grained tokens only work on repos
-      you *own*, so pre-transfer create a **classic** token instead —
-      github.com/settings/tokens → **Generate new token (classic)** → tick
-      the **repo** scope → Generate → paste it into the console sign-in
-      (set Repo owner to the OLD owner's username while the repo still
-      lives there). On a fresh account this token reaches only this one
-      repo. After the transfer, switch to the fine-grained token (phase E).
+      before the transfer, you need a token. **You create it yourself, on
+      YOUR GitHub account — tokens are personal credentials and are never
+      created for you or shared with you by anyone** (your collaborator
+      access from 0.3 is what grants the rights; the token just proves to
+      the console that you are you, and makes every change show under your
+      name). GitHub's *fine-grained* tokens only work on repos you own, so
+      pre-transfer use a **classic** token:
+      1. Logged in as **you**, open **github.com/settings/tokens** →
+         **Generate new token** → **Generate new token (classic)**.
+      2. Note: `raid-console`. Expiration: 90 days is plenty (this token
+         retires at the transfer anyway, phase E1b).
+      3. Tick exactly one scope: **repo**. Nothing else.
+      4. **Generate token** (green, bottom) → copy the `ghp_…` value.
+      5. Open the console → set **Repo owner** to the OLD owner's username
+         (`superrcharge` — the repo still lives there) → paste the token →
+         **Connect**. It's stored in your own browser; you won't be asked
+         again on this device.
+      On a fresh account this token reaches only this one repo. After the
+      transfer you'll delete it and switch to a fine-grained token
+      (phase E / E1b).
 
 ### Phase A — before transferring (10 min)
 
