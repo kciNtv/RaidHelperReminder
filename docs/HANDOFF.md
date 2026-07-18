@@ -175,7 +175,7 @@ so the old owner isn't a hidden dependency forever.
       **test channel** — for each: right-click the channel → Edit Channel →
       Permissions → Add members or roles → your bot → ✓ View Channel,
       ✓ Send Messages → Save Changes.
-- [ ] **C3 [old owner, after C4–D2 verified]** — kick the old bot from the
+- [x] **C3 [old owner, after C4–D2 verified]** — kick the old bot from the
       server (right-click it in the member list → Kick) and optionally
       delete the old application at discord.com/developers/applications.
 
