@@ -1,22 +1,21 @@
-# Handoff Checklist
+# Handoff: go-live and ownership transfer
 
-This document is the complete handover: what's done, what's left to do, what's
-left to test, and exactly where every secret and variable goes. Work through
-it top to bottom. For background on *how* anything works, see
-[GUIDE.md](GUIDE.md) — but this checklist stands on its own.
+This is the complete runbook for the two remaining events in this project's
+life: **turning the reminders on for the whole guild** (section 2) and
+**transferring ownership to the guild leader** (section 3). Everything else
+is finished: the system was fully live-tested on the real server on
+July 17, 2026 — real DMs, real announcements, real officer reports.
 
 **Never used GitHub?** Read [GITHUB-BASICS.md](GITHUB-BASICS.md) first
-(5 minutes). Every step below — editing the config, adding secrets, running
-tests — is done in the web browser with normal buttons; that page shows
-exactly which buttons. Nothing to install, no command line.
+(5 minutes). Every step below is done in the web browser with normal
+buttons. Nothing to install, no command line.
 
-**Verifying the original asks were met?** [GUIDE.md section 1](GUIDE.md)
-restates the five original requirements verbatim (recurring signups, Friday
-5PM non-signer reminders, gear/consumes DM on signup, the 8:15PM "invites
-started" post, attendance tracking) and traces each one to exactly how and
-where it is addressed — which ones are Raid-Helper Premium configuration and
-which ones this project provides. Section 3 of the guide explains how the
-automation works in plain language, with a diagram.
+**How does it all work?** [GUIDE.md](GUIDE.md) — the owner's manual:
+what the bot does, every setting explained, operations, troubleshooting.
+
+**Day-to-day settings editing** never touches this repo directly:
+**https://superrcharge.github.io/raid-console/** is the settings GUI
+(teams, wording, timings — with a Save button that deploys).
 
 ---
 
@@ -24,194 +23,154 @@ automation works in plain language, with a diagram.
 
 | Item | Status |
 |---|---|
-| Reminder script (`remind.py`) | Complete. 27 unit tests pass. |
-| Digest DMs (one DM listing all unsigned raids) | Complete, tested. |
-| Per-team audiences (roles / user lists / channel access) | Complete, tested. |
-| Raid-time announcements ("invites started", @role ping) | Complete, tested. |
-| Duplicate prevention (`state.json`) | Complete, tested. |
-| GitHub Actions schedules (announcements every 15 min; reminders Fri 5PM ET) | In place, **manually disabled** (step 5 enables it). |
-| Windows Task Scheduler alternative (`run_local.ps1`) | Complete. |
-| Live test against a real Discord server | **NOT done yet** — needs the credentials below. That is what sections 3-5 walk through. |
-
-Nothing has ever been sent to anyone. The workflow is disabled specifically
-so it cannot run (and fail) before the secrets exist.
+| Reminder DMs, digests, duplicate suppression | ✅ live-tested July 17, 2026 |
+| Raid-time announcements (75 min before start, evening schedule) | ✅ live-tested |
+| Per-raid run reports to the officers chat (names, #channels) | ✅ live-tested |
+| Secrets (`DISCORD_BOT_TOKEN`, `RAIDHELPER_API_KEY`) | ✅ in place |
+| Workflows (Friday reminders + evening announcements) | ✅ enabled and running |
+| Settings console (GUI) | ✅ live |
+| **Audiences** | ⚠️ **still pointed at the test user only** — that is the go-live switch below |
 
 ---
 
-## 2. Values to collect (do this first)
+## 2. Go-live: flip the audiences to the real teams
 
-Gather these eight values before touching anything else.
+Doing this arms the system for the whole guild: the next Friday 5PM ET run
+DMs every real non-signer, and raid-time announcements post in the real
+signup channels. Two prerequisites, then a two-minute edit.
 
-| # | Value | Where to get it | Where it goes |
-|---|---|---|---|
-| 1 | **Discord bot token** | Go to **discord.com/developers/applications** (the "Discord Developer Portal" - a website; log in with your normal Discord account) -> **New Application** button (top right; name it e.g. "Raid Reminder") -> **Bot** (left sidebar) -> **Reset Token** button (expect a Multi-Factor Authentication prompt - normal; the token shows ONCE, copy it right away). While on that Bot page: scroll to *Privileged Gateway Intents*, enable **Server Members Intent**, then **click the green "Save Changes" bar at the very bottom of the page** - skip that click and the toggle silently reverts (top cause of a `members fetch returned 403` error later). Then **OAuth2** (left sidebar) -> scroll to *URL Generator* -> under Scopes tick `bot` (a permissions grid appears) -> tick **View Channels** + **Send Messages** -> open the generated URL (bottom of page) to invite the bot. Inviting needs **Manage Server** permission - if your server isn't in the dropdown, send the same URL to the server owner (one click; the bot still belongs to your account, and *Public Bot* on the Bot page must be ON for their click to work). Confirm: the bot appears in the server's member list, offline/grey is normal. Full anchored walkthrough: [GUIDE.md section 5.1](GUIDE.md). | Secret `DISCORD_BOT_TOKEN` (section 3) |
-| 2 | **Raid-Helper API key** | In the Discord app, in any channel's message box in your server, type `/apikey` and pick **show**. Raid-Helper replies with a message only you can see. | Secret `RAIDHELPER_API_KEY` (section 3) |
-| 3 | **Server ID** | Discord app: **User Settings** (gear icon next to your username, bottom-left) -> **Advanced** -> enable **Developer Mode** (one-time; it adds the "Copy ID" right-click options used below). Then right-click the **server name** (very top of the left sidebar) -> **Copy Server ID**. | `config.json`: `discord.guild_id` AND `raidhelper.server_id` (same value in both) |
-| 4 | **Team A role ID** | Discord app: click the server name (top-left) -> **Server Settings** -> **Roles** -> right-click the role -> **Copy Role ID** | `config.json`: `audiences.teamA.role_ids` |
-| 5 | **Team B role ID** | same | `config.json`: `audiences.teamB.role_ids` |
-| 6 | **@raiders role ID** (the role the 8:15 announcement pings) | same | `config.json`: `announcements[0].mention_role_ids` |
-| 7 | **Team A + Team B signup channel IDs** | Discord app: right-click each signup channel (in the channel list, left side) -> **Copy Channel ID** | `config.json`: `audience_rules` (routes each event to the right team) |
-| 8 | *(optional)* **Fallback channel ID** (public ping for members whose DMs are closed) | same | `config.json`: `discord.fallback_channel_id` ("" = feature off) |
-| 9 | *(optional)* **Run-report channel ID** (bot posts "who was DMed / what was announced" after each live run - e.g. an officers channel; the bot needs View + Send access there) | same | `config.json`: `discord.log_channel_id` ("" = feature off) |
-
-> If channel access does NOT line up with team roles, an audience can instead
-> use `"channel_access": "<channelId>"` — everyone who can see that channel
-> counts as expected. Caveats (admins match everywhere; the bot needs access
-> to that channel) in [GUIDE.md section 4](GUIDE.md).
-
----
-
-## 3. Where the SECRETS go (values 1 and 2 - never in files)
-
-**GitHub (the hosting we set up):**
-
-1. Open the repo on github.com
-2. Click **Settings** - the right-most tab in the row along the top of the project page (Code / Issues / ... / Settings). This is the *project's* settings, not your account's. Then in the left sidebar: **Secrets and variables -> Actions -> New repository secret** (green button).
-3. Create exactly these two, names must match character-for-character:
-   - Name: `DISCORD_BOT_TOKEN` - Value: the bot token
-   - Name: `RAIDHELPER_API_KEY` - Value: the API key
-
-That's the only place secrets live. They are write-only (nobody can read them
-back, not even the owner) and are NOT copied if the repo is transferred - a
-new owner re-adds them (2 minutes, by design).
-
-**Only if running on a PC instead of GitHub:** copy `secrets.example.env` to
-`secrets.local.env` next to the script and fill in the two lines. That file
-is gitignored and never leaves the machine.
-
-Never put either value in `config.json`, in a commit, or in Discord chat.
-If a value ever leaks: bot token -> Discord Developer Portal (discord.com/developers/applications, same site as value 1) -> Bot -> Reset Token;
-API key -> `/apikey` -> refresh. Then update the secret.
+- [ ] **2.1 — Guild leader posts a heads-up** in the guild (recommended, one
+      line: *"New bot: if you haven't signed up for a raid by Friday
+      afternoon, it will DM you a reminder. Sign up and it leaves you
+      alone."*) so ~40 people aren't surprised by a first-time DM.
+- [ ] **2.2 — Pick the go-live moment.** Any time before the Friday 5PM ET
+      run works; flipping mid-week simply means the coming Friday is the
+      first real send.
+- [ ] **2.3 — Make the edit** (either way):
+      - **Console:** open the [settings console](https://superrcharge.github.io/raid-console/)
+        → *Teams & audiences* → for each team, clear the **user IDs** box and
+        set the **Role IDs** box: `default` → `1361002868781351152` (@raiders),
+        `teamRed` → `1527492157483520060`, `teamBlue` → `1527492255462719568`.
+        Leave the `testers` team as is (it keeps test-channel events private
+        to the tester forever). Click **Save & deploy**.
+      - **GitHub:** edit `config.json` (pencil icon), make the same three
+        role_ids changes in the `audiences` block (the correct values are
+        also written in the `_comment_audiences` line right above it).
+- [ ] **2.4 — Verify with a dry run** (sends nothing): console → **Trigger
+      dry run**, or Actions tab → *Send signup reminders* → Run workflow →
+      tick dry_run. Open the newest run → `remind` job.
+      *Pass: each upcoming raid shows realistic "N expected, N responded,
+      N missing" numbers and the "would DM" list is the real non-signers.*
+- [ ] **2.5 — Done.** From here everything is automatic: Friday 5PM ET
+      digest DMs to non-signers, announcements 60–75 min before each raid,
+      a per-raid report in the officers chat after anything happens.
 
 ---
 
-## 4. Where the VARIABLES go (values 3-8 - the config file)
+## 3. Ownership transfer to the guild leader
 
-Create `config.json` in the repo root (root = the top-level file list you see on the project's front page, next to README) — entirely in the browser: open
-`config.example.json`, copy its contents, then repo front page -> **Add file
--> Create new file**, name it `config.json`, paste, replace the placeholder
-IDs with values 3-8, and click **Commit changes** (commit = save; see
-[GITHUB-BASICS.md](GITHUB-BASICS.md)). All later edits use the pencil icon
-on the file. The example file is already
-shaped for this exact setup - two teams, Friday digest reminders, the 8:15
-"invites started" announcement with the Kcin wording - so it's fill-in-the-
-blanks, not authoring. Every field is explained in
-[GUIDE.md section 7](GUIDE.md); the ones you will actually touch:
+Work top to bottom; each phase has a pass condition. Rough total: 30–40
+minutes, all in the browser. Steps marked **[old owner]** are done by Mike,
+**[new owner]** by the guild leader.
 
-- `discord.guild_id` + `raidhelper.server_id` <- value 3 (same ID, both places)
-- `audiences.teamA` / `teamB` `role_ids` <- values 4, 5
-- `audience_rules` channel IDs <- value 7 (maps each signup channel to its team)
-- `announcements[0].mention_role_ids` <- value 6
-- `announcements[0].text` <- already contains the requested wording; edit freely
-- `discord.fallback_channel_id` <- value 8 or leave `""`
-- `reminder_windows_hours: [168]` + the Friday cron = weekly Friday-5PM-ET
-  reminders. Don't change unless the cadence changes.
+### Phase A — before transferring (10 min)
 
-Changing anything later = edit `config.json`, commit. That's the whole
-deployment process.
+- [ ] **A1 [new owner]** — create a free GitHub account if you don't have
+      one: github.com → Sign up. Tell the old owner the username.
+- [ ] **A2 [old owner]** — confirm the system is healthy: officers chat got
+      its expected reports this week, or run a dry run (Actions tab) and see
+      it pass. Don't transfer a broken system.
+
+### Phase B — transfer the repo (5 min)
+
+- [ ] **B1 [old owner]** — repo → **Settings** (right-most tab) → scroll to
+      the bottom **Danger Zone** → **Transfer ownership** → type the new
+      owner's GitHub username → confirm.
+- [ ] **B2 [new owner]** — accept the transfer (GitHub emails you a link).
+      *Pass: the repo now shows under YOUR account, at
+      github.com/YOUR-NAME/RaidHelperReminder.*
+- [ ] **B3 — know what did NOT transfer** (by design, both of you):
+      the two **secrets** (phase D re-adds them) and the **Discord bot**
+      (owned by the old owner's Discord account — phase C replaces it).
+
+### Phase C — new owner's own Discord bot (10 min)
+
+The bot that sends messages must belong to the new owner's Discord account,
+so the old owner isn't a hidden dependency forever.
+
+- [ ] **C1 [new owner]** — create the bot app: follow
+      [GUIDE.md section 5.1](GUIDE.md) exactly — it is field-tested and
+      calls out every trap (the MFA prompt on Reset Token, the green
+      **Save Changes** bar that silently discards the Server Members Intent
+      toggle if missed, Public Bot, the invite needing Manage Server).
+      You end up with: a bot token copied, **Server Members Intent ON and
+      saved**, and your bot visible in the server's member list.
+- [ ] **C2 [new owner]** — give the new bot access to the private channels
+      the old bot had: the **officers chat** (run reports) and the
+      **test channel** — for each: right-click the channel → Edit Channel →
+      Permissions → Add members or roles → your bot → ✓ View Channel,
+      ✓ Send Messages → Save Changes.
+- [ ] **C3 [old owner, after C4–D2 verified]** — kick the old bot from the
+      server (right-click it in the member list → Kick) and optionally
+      delete the old application at discord.com/developers/applications.
+
+### Phase D — secrets (5 min)
+
+- [ ] **D1 [new owner]** — repo → **Settings** → **Secrets and variables →
+      Actions** → **New repository secret**, create exactly these two
+      (names must match character-for-character):
+      - `DISCORD_BOT_TOKEN` — the token from C1
+      - `RAIDHELPER_API_KEY` — in Discord type `/apikey` → **show**
+        (needs admin; you have it). If the key might have been shared
+        during setup, run `/apikey` → **refresh** first and use the new one.
+- [ ] **D2 — verify everything [new owner]** — **Actions** tab → *Send
+      signup reminders* → **Run workflow** → mode `all`, tick **dry_run** →
+      open the run → `remind` job.
+      *Pass: "Fetched N upcoming event(s)", realistic expected/responded/
+      missing numbers, no errors. This proves the new token, the API key,
+      the intent toggle, and the bot's server membership all at once.
+      (A `members fetch returned 403` here = the Save Changes bar trap or
+      wrong server — see the troubleshooting table, GUIDE section 8.)*
+
+### Phase E — settings console (5 min)
+
+- [ ] **E1 [new owner]** — open
+      **https://superrcharge.github.io/raid-console/** → change **Repo
+      owner** to your GitHub username → follow the on-page token steps
+      (fine-grained token, only the RaidHelperReminder repo, Contents +
+      Actions read/write) → **Connect**.
+      *Pass: your real teams and messages appear in the forms.*
+- [ ] **E2 [new owner]** — prove the loop: change anything trivial (e.g.
+      add a space to a message), **Save & deploy**, see the commit appear on
+      the repo, then change it back.
+- [ ] *(optional)* **E3 [old owner]** — transfer the `raid-console` repo the
+      same way as phase B so the page URL moves under the new owner's
+      account too. Not required: the page is public code with no data in it,
+      and it works for the new owner regardless of who hosts it.
+
+### Phase F — day-to-day ownership (read, no clicks)
+
+- Editing anything = the console (or `config.json` pencil-edit). Deploys on
+  save. [GUIDE.md section 7](GUIDE.md) explains every field.
+- Raid day/time changes need **nothing** — the bot follows the Raid-Helper
+  events automatically.
+- Reading what happened = the officers-chat reports; full detail in the
+  **Actions** tab logs.
+- Pausing everything = Actions tab → each workflow → "…" → Disable.
+  Re-enable the same way. Troubleshooting table: [GUIDE.md section 8](GUIDE.md).
 
 ---
 
-## 5. What's left to TEST (in this order)
-
-Each step has a pass condition. Stop at any failure and check the
-troubleshooting table in [GUIDE.md section 8](GUIDE.md).
-
-**5.1 - Enable the workflow.** **Actions** tab (in the same top tab row as Settings) -> **Send signup reminders** (left sidebar) -> the **"..."** menu (top right, next to the search box) -> **Enable workflow**.
-*Pass: the workflow shows as enabled.*
-
-**5.2 - Dry run (sends nothing, ever).** Actions tab -> Send signup
-reminders -> **Run workflow** (grey dropdown button on the right side of the
-blue banner) -> mode `all`, tick **dry_run** -> green **Run workflow**. The
-run appears in the list after a few seconds; click it, then click the
-**remind** job to read the log.
-*Pass: the log lists each upcoming event with "N expected, N responded,
-N missing" using numbers that match reality, and "[dry-run] would DM ..."
-lines name the right people. Both secrets and all IDs are proven correct at
-this point. Nothing was sent.*
-
-**5.3 - Live DM smoke test (one person only).** In `config.json`, temporarily
-change **EVERY audience** (default, teamRed/teamA, teamBlue/teamB - all of
-them) to `{ "user_ids": ["YOUR_OWN_DISCORD_USER_ID"] }` (right-click
-your own name in the member list on the right side of any channel, or on one
-of your messages -> **Copy User ID**), commit, and Run workflow with mode
-`reminders`, dry_run OFF, while you are not signed up to at least one
-upcoming event. *(Field-tested July 17, 2026: changing only ONE audience is
-not enough - any other team with an upcoming event would still DM its real
-members. All audiences must point at you during the test.)* Safest order:
-run once more WITH dry_run ticked first and confirm the log's only
-"[dry-run] would DM" line names you; then run with dry_run off.
-*Pass: exactly one DM arrives, to you, with correct event title, local time,
-and a working signup link. The run's final commit updates `state.json`.*
-
-**5.4 - Duplicate suppression.** Run the workflow again with the same settings.
-*Pass: log says nothing new to send; no second DM.*
-
-**5.5 - Announcement smoke test.** No need to wait for a raid or create a
-throwaway event (field-tested shortcut, July 17, 2026): in `config.json`,
-temporarily set the announcement's `minutes_before` to a number larger than
-the minutes until an EXISTING event's start (e.g. `6500` for an event ~4 days
-out), add `"channel_id": "<private test channel id>"` so it posts there
-instead of the real signup channel, and set `mention_role_ids` to `[]` so
-nobody gets pinged. Commit, Run workflow with mode `announcements`, dry_run
-OFF. The bot must be able to SEE the test channel - if it's private, right-
-click the channel -> Edit Channel -> Permissions -> add the bot with View
-Channel + Send Messages (a `FAILED to announce ... check bot access` log
-line means exactly this). Afterwards restore `minutes_before: 15`, the real
-`mention_role_ids`, and remove the `channel_id` override. The temporary
-wide-window test does NOT stop the real 15-minute announcement later - the
-duplicate tracker keys on the window size too.
-*Pass: the message appears in the test channel with the "Raid invites has
-started..." text. Re-running posts no duplicate.*
-
-**5.6 - Restore the real config.** Revert the 5.3 audience change, commit.
-*Pass: `config.json` matches section 4 again.*
-
-**5.7 - Done.** Leave the workflow enabled. From here on: signups create
-themselves (Raid-Helper recurring events), Friday 5PM ET the non-signers get
-their digest DM, 8:15 PM the invite announcement posts, attendance tracks
-in Raid-Helper. Zero manual steps per event.
-
-*(Optional 5.8 - fallback ping: have a member disable "Direct Messages from
-server members" (Discord: click the server name -> **Privacy Settings** -> toggle off **Direct Messages**), leave them unsigned, run reminders. Pass: they get publicly
-pinged in the fallback channel instead.)*
-
----
-
-## 6. Also verify in Raid-Helper itself (no code - probably already done)
+## 4. Also verify in Raid-Helper itself (no code — probably already done)
 
 - [ ] Each raid night exists as a **weekly recurring event** posting into the
       right team's signup channel (premium feature).
 - [ ] Events have `< response: ... >` set so sign-ups get the gear/consumes DM
       (premium advanced setting).
-- [ ] `attendance` is on (default) - optionally tag per team
+- [ ] `attendance` is on (default) — optionally tag per team
       (`< attendance: teamA >`) for per-team `/attendance` stats.
 
-All three are set in each event's *advanced options* - easiest via the
-Raid-Helper web dashboard (**raid-helper.dev** -> Login, top right, with your
-Discord account -> your server -> the event), or with the `/edit` command in
-Discord. Details for all three: [GUIDE.md section 2](GUIDE.md).
-
----
-
-## 7. Ownership transfer (when handing the repo over)
-
-1. Repo -> Settings -> General -> Danger Zone -> **Transfer ownership** to the
-   new owner's GitHub account.
-2. New owner: re-add the two secrets (section 3) - secrets do not transfer.
-3. New owner: confirm the workflow is still enabled (Actions tab) and click
-   Run workflow -> dry_run as a sanity check.
-4. **The Discord bot application** is owned by the previous owner's Discord
-   account and does NOT transfer with the repo. Easiest fix (10 min): the new
-   owner creates their *own* application (HANDOFF section 2, value 1 — same
-   steps: New Application -> Bot -> Reset Token -> enable Server Members
-   Intent -> OAuth2 invite with View Channels + Send Messages), then replaces
-   the `DISCORD_BOT_TOKEN` secret with their token. The config does not care
-   which bot sends the messages. The old bot can then be kicked from the
-   server and its application deleted.
-5. Optional: previous owner deletes their local clone; nothing secret is in it.
-
-Day-to-day ownership = editing `config.json` (roles, times, wording) and
-reading the Actions log when curious. The operations reference, including
-pausing, secret rotation, and the troubleshooting table, is
-[GUIDE.md section 8](GUIDE.md).
+All three are set in each event's *advanced options* — easiest via the
+Raid-Helper web dashboard (**raid-helper.dev** → Login, top right, with your
+Discord account → your server → the event), or with the `/edit` command in
+Discord. Details: [GUIDE.md section 2](GUIDE.md).

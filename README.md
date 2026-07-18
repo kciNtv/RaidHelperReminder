@@ -40,60 +40,18 @@ Features:
 - Runs anywhere a script can run on a schedule: GitHub Actions (free,
   recommended), Windows Task Scheduler, cron.
 
-## Go live — current status and remaining steps
+## Status
 
-> **Handing this over or picking it up fresh? Start with
-> [docs/HANDOFF.md](docs/HANDOFF.md)** — the complete checklist: every value
-> to collect and where it goes, exactly where secrets and variables are
-> placed, and the ordered test plan with pass conditions.
+**Fully built and live-tested on the real server (July 17, 2026)** — every
+feature has fired for real: reminder DMs, digests, duplicate suppression,
+raid-time announcements, per-raid officer run reports, the settings console.
+Two things remain, both decisions rather than work:
 
-### Live progress tracker
-
-*Last updated: **July 17, 2026** — go-live testing in progress. This table is
-kept current as each step completes; details for every step are in the
-numbered list below and in [docs/HANDOFF.md](docs/HANDOFF.md).*
-
-| # | Step | Status |
-|---|------|--------|
-| 1 | Create the Discord bot (token copied, **Server Members Intent** on) | ✅ July 17 |
-| 2 | Invite the bot to the server (needs Manage Server — else send invite URL to guild leader) | ✅ July 17 — bot is in the server |
-| 3 | Get the Raid-Helper API key (`/apikey` → show; needs elevated perms) | ✅ July 17 — key received from guild leader |
-| 4 | Collect IDs: server, team roles, @raiders role, signup channels | ✅ July 17 — all 8 collected (Red: Tue+Thu, Blue: Wed+Sun) |
-| 5 | Add repo secrets `DISCORD_BOT_TOKEN` + `RAIDHELPER_API_KEY` | ✅ July 17 — both verified present |
-| 6 | Commit real `config.json` | ✅ July 17 — teamRed/teamBlue audiences, 4 channel rules, fallback off |
-| 7 | Enable the Actions workflow | ✅ July 17 |
-| 8 | Dry-run (HANDOFF 5.2) — proves secrets + IDs, sends nothing | ✅ July 17 — 2 events, both audiences resolve, digest works. (Fixed en route: script needed a real User-Agent — Cloudflare 403 — and a fresh bot token after multiple resets) |
-| 9 | Live DM smoke test to one person only (HANDOFF 5.3) | ✅ July 17 — "1 DM(s) sent", to Mike alone; state.json committed by the run |
-| 10 | Duplicate-suppression re-run (HANDOFF 5.4) | ✅ July 17 — same run again: "0 DM(s) sent" |
-| 11 | Announcement smoke test (HANDOFF 5.5) | ✅ July 17 — 2 posts to test channel, re-run posts 0; bot channel-access failure found+fixed en route |
-| 12 | Restore real config — **live** (HANDOFF 5.6–5.7) | 🔄 Announcements: KEEPING automated raid-time posts (60 min before, decided July 17). Audiences still Mike-only — the one remaining switch, pending go-live date with guild leader |
-
-**Status right now:** all code and docs are in place and tested. The Actions
-workflow is **manually disabled** so it doesn't fail-and-email every 15
-minutes while the secrets are missing. Remaining steps, in order:
-
-1. **Create the Discord bot** (once, ~5 min): [docs/GUIDE.md section 5.1](docs/GUIDE.md)
-   — new application at discord.com/developers, copy the bot token, enable
-   **Server Members Intent**, invite it to the server with Send Messages only.
-2. **Get the Raid-Helper API key**: type `/apikey` in the Discord server,
-   pick **show**.
-3. **Add both as repo secrets**: **Settings** (right-most tab at the top of
-   this page) → **Secrets and variables → Actions** →
-   `DISCORD_BOT_TOKEN` and `RAIDHELPER_API_KEY`.
-4. **Commit a real `config.json`**: copy `config.example.json`, fill in the
-   server ID, team role/channel IDs, and the @raiders role ID for
-   announcements ([docs/GUIDE.md section 7](docs/GUIDE.md) explains every field).
-5. **Enable the workflow**: **Actions** tab (top of this page) → "Send
-   signup reminders" → "…" menu → Enable workflow.
-6. **Dry-run first**: Actions tab → **Run workflow** button → tick
-   **dry_run** → read the run's log; it prints exactly who would get what
-   without sending anything.
-7. **Live smoke test**: set one audience's `user_ids` to just your own
-   Discord ID, run for real, confirm the DM arrives, then restore the real
-   config.
-
-For handover: Settings → Transfer ownership; the new owner re-adds the two
-secrets (secrets never transfer, by design).
+1. **Go-live switch** — audiences currently point at one test user; flipping
+   them to the real team roles arms the weekly reminders for everyone.
+   Exact steps: [docs/HANDOFF.md section 2](docs/HANDOFF.md).
+2. **Ownership transfer** to the guild leader — complete step-by-step
+   runbook: [docs/HANDOFF.md](docs/HANDOFF.md).
 
 ## Settings GUI
 
@@ -123,7 +81,8 @@ through it). Source: [raid-console](https://github.com/superrcharge/raid-console
 | `remind.py` | The whole program — heavily commented, readable top to bottom |
 | `config.json` | All behavior: audiences, rules, windows, messages, announcements |
 | `state.json` | Auto-managed memory of everything already sent |
-| `.github/workflows/remind.yml` | GitHub Actions schedules (announcements every 15 min; reminders Friday 5PM ET) |
+| `.github/workflows/remind.yml` | GitHub Actions schedule: reminder DMs, Friday 5PM ET |
+| `.github/workflows/announce.yml` | GitHub Actions schedule: raid-time announcements (every 15 min during evening raid hours) |
 | `run_local.ps1` + `secrets.example.env` | Windows / Task Scheduler alternative |
 | `docs/GITHUB-BASICS.md` | GitHub for first-timers — the four browser-only actions you'll ever need |
 | `docs/HANDOFF.md` | The go-live/handover checklist: values, secrets, ordered test plan |
