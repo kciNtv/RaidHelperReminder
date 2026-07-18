@@ -55,11 +55,11 @@ Two things remain, both decisions rather than work:
 
 ## Settings GUI
 
-**https://superrcharge.github.io/raid-console/** — a browser page for editing
+**https://kcintv.github.io/raid-console/** — a browser page for editing
 every setting in `config.json` (teams, routing, wording, timings, report
 channels) with friendly forms instead of raw JSON, plus a dry-run button.
 First use needs a one-time GitHub token (2 minutes; the page walks you
-through it). Source: [raid-console](https://github.com/superrcharge/raid-console)
+through it). Source: [raid-console](https://github.com/kcintv/raid-console)
 (public repo, code only — all settings stay in this private repo).
 
 ## Quick start

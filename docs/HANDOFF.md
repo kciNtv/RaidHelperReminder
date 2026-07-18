@@ -14,7 +14,7 @@ buttons. Nothing to install, no command line.
 what the bot does, every setting explained, operations, troubleshooting.
 
 **Day-to-day settings editing** never touches this repo directly:
-**https://superrcharge.github.io/raid-console/** is the settings GUI
+**https://kcintv.github.io/raid-console/** is the settings GUI
 (teams, wording, timings — with a Save button that deploys).
 
 ---
@@ -52,7 +52,7 @@ signup channels. Two prerequisites, then a two-minute edit.
       run works; flipping mid-week simply means the coming Friday is the
       first real send.
 - [ ] **2.3 — Make the edit** (either way):
-      - **Console:** open the [settings console](https://superrcharge.github.io/raid-console/)
+      - **Console:** open the [settings console](https://kcintv.github.io/raid-console/)
         → *Teams & audiences* → for each team, clear the **user IDs** box and
         set the **Role IDs** box: `default` → `1361002868781351152` (@raiders),
         `teamRed` → `1527492157483520060`, `teamBlue` → `1527492255462719568`.
@@ -200,7 +200,7 @@ so the old owner isn't a hidden dependency forever.
 ### Phase E — settings console (5 min)
 
 - [ ] **E1 [new owner]** — open
-      **https://superrcharge.github.io/raid-console/** → change **Repo
+      **https://kcintv.github.io/raid-console/** → change **Repo
       owner** to your GitHub username → follow the on-page token steps
       (fine-grained token, only the RaidHelperReminder repo, Contents +
       Actions read/write — this works now because you OWN the repo) →
@@ -214,7 +214,7 @@ so the old owner isn't a hidden dependency forever.
 - [ ] **E2 [new owner]** — prove the loop: change anything trivial (e.g.
       add a space to a message), **Save & deploy**, see the commit appear on
       the repo, then change it back.
-- [ ] *(optional)* **E3 [old owner]** — transfer the `raid-console` repo the
+- [x] *(optional)* **E3 [old owner]** — transfer the `raid-console` repo the
       same way as phase B so the page URL moves under the new owner's
       account too. Not required: the page is public code with no data in it,
       and it works for the new owner regardless of who hosts it.
