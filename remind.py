@@ -512,6 +512,9 @@ def run_reminders(config, state, events, now, dry_run, bot_token, ctx, log):
             f"- '{title}' starts <t:{start}> | audience '{audience_name}': "
             f"{len(expected)} expected, {len(responded)} responded, {len(missing)} missing."
         )
+        if missing:
+            log(f"  Still unsigned for '{title}' ({len(missing)}): "
+                + names_list(missing))
 
         for member in missing:
             uid = str(member["user"]["id"])
@@ -568,7 +571,15 @@ def run_reminders(config, state, events, now, dry_run, bot_token, ctx, log):
 # Announcements - channel messages around raid time
 # ---------------------------------------------------------------------------
 
-def run_announcements(config, state, events, now, dry_run, bot_token, log):
+def names_list(members, cap=30):
+    """Readable comma list of member display names, capped."""
+    names = ", ".join(member_display_name(m) for m in members[:cap])
+    if len(members) > cap:
+        names += f" (+{len(members) - cap} more)"
+    return names
+
+
+def run_announcements(config, state, events, now, dry_run, bot_token, log, ctx=None):
     """Post configured channel messages N minutes before each event starts.
 
     Example config entry (fires 15 minutes before start, in the event's own
@@ -605,6 +616,23 @@ def run_announcements(config, state, events, now, dry_run, bot_token, log):
                 if send_channel_message(channel, text, bot_token):
                     sent += 1
                     log(f"  Announcement posted for '{event.get('title')}' in {channel}.")
+                    # Tell the officers who is still unsigned at invite time.
+                    if ctx is not None:
+                        _an, spec = pick_audience(event, config)
+                        responded = responded_user_ids(
+                            event_signups(event),
+                            config.get("treat_as_no_response") or [])
+                        expected = audience_members(
+                            ctx.get_members(), spec,
+                            guild_id=config["discord"]["guild_id"],
+                            roles_map=ctx.get_roles_map() if spec.get("channel_access") else None,
+                            overwrites_for=ctx.get_overwrites if spec.get("channel_access") else None,
+                        )
+                        still = [m for m in expected
+                                 if str(m["user"]["id"]) not in responded]
+                        if still:
+                            log(f"  Still unsigned for '{event.get('title')}' "
+                                f"({len(still)}): " + names_list(still))
                 else:
                     log(f"  FAILED to announce in channel {channel} - check bot access.")
                     continue
@@ -662,14 +690,14 @@ def run(config, state, now, dry_run, bot_token, rh_api_key, log=print, mode="all
         log(line)
         s = str(line).strip()
         if s.startswith(("DM sent", "DMs closed", "Announcement posted",
-                         "FAILED", "Fallback")):
+                         "Still unsigned", "FAILED", "Fallback")):
             activity.append(s)
 
     ctx = DiscordContext(guild_id, bot_token)
     if mode in ("all", "reminders"):
         run_reminders(config, state, events, now, dry_run, bot_token, ctx, tracked_log)
     if mode in ("all", "announcements"):
-        run_announcements(config, state, events, now, dry_run, bot_token, tracked_log)
+        run_announcements(config, state, events, now, dry_run, bot_token, tracked_log, ctx)
     prune_state(state, now)
 
     log_channel = (config.get("discord") or {}).get("log_channel_id") or ""
