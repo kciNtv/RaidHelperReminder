@@ -749,7 +749,8 @@ def run(config, state, now, dry_run, bot_token, rh_api_key, log=print, mode="all
                 lines.append(f"📣 Invites announcement posted in {ev['announced']}")
             if ev["unsigned"]:
                 lines.append("⏳ Still unsigned: " + ev["unsigned"])
-            text = "\n".join(lines)
+            # Blank line after the title, then one line per fact.
+            text = lines[0] + "\n\n" + "\n".join(lines[1:])
             if len(text) > 1900:  # Discord message limit is 2000 chars
                 text = text[:1900] + "\n… (truncated - full detail in the Actions log)"
             # Trailing zero-width-space line = a visual gap between the
