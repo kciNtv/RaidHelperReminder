@@ -63,7 +63,7 @@ def http_json(method, url, headers=None, body=None, max_retries=4):
     # HTML 403 that never reaches the API proper.
     headers.setdefault(
         "User-Agent",
-        "RaidHelperReminder (https://github.com/superrcharge/RaidHelperReminder, 1.0)",
+        "RaidHelperReminder (https://github.com/kcintv/RaidHelperReminder, 1.0)",
     )
     if body is not None:
         data = json.dumps(body).encode("utf-8")

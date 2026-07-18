@@ -90,24 +90,24 @@ trigger runs, read logs — for days or weeks while the old owner still owns
 the repo and can help. The actual transfer (phase B) then changes nothing
 about his day-to-day.
 
-- [ ] **0.1 [new owner]** — create a free GitHub account: github.com →
+- [x] **0.1 [new owner]** — create a free GitHub account: github.com →
       Sign up. Tell the old owner the exact username.
-- [ ] **0.2 [old owner]** — repo → **Settings** → **Collaborators** (left
+- [x] **0.2 [old owner]** — repo → **Settings** → **Collaborators** (left
       sidebar) → **Add people** → type the username → **Add**. (No role to
       pick — on a personal repo a collaborator automatically gets **write**
       access: edit files, run workflows, read logs. Owner-only things —
       secrets, repo settings, transfers — stay with you until the transfer,
       and nothing in phase 0 needs them.)
-- [ ] **0.3 [new owner]** — accept the invitation (GitHub emails a link).
+- [x] **0.3 [new owner]** — accept the invitation (GitHub emails a link).
       *Pass: the repo appears when you're logged in as you.*
-- [ ] **0.4 [new owner]** — you can now do everything in the browser:
+- [x] **0.4 [new owner]** — you can now do everything in the browser:
       - **Change settings:** open `config.json` → pencil icon → edit →
         Commit changes ([GITHUB-BASICS.md](GITHUB-BASICS.md) shows every
         button; [GUIDE.md section 7](GUIDE.md) explains every field).
       - **Safe test run:** **Actions** tab → *Send signup reminders* →
         **Run workflow** → tick **dry_run** → read the log.
       - **See what happened:** Actions tab logs + the officers-chat reports.
-- [ ] **0.5 [new owner, optional]** — to use the **settings console**
+- [x] **0.5 [new owner, optional]** — to use the **settings console**
       before the transfer, you need a token. **You create it yourself, on
       YOUR GitHub account — tokens are personal credentials and are never
       created for you or shared with you by anyone** (your collaborator
@@ -131,24 +131,24 @@ about his day-to-day.
 
 ### Phase A — before transferring (10 min)
 
-- [ ] **A1 [new owner]** — GitHub account exists (done in phase 0).
-- [ ] **A2 [old owner]** — confirm the system is healthy: officers chat got
+- [x] **A1 [new owner]** — GitHub account exists (done in phase 0).
+- [x] **A2 [old owner]** — confirm the system is healthy: officers chat got
       its expected reports this week, or run a dry run (Actions tab) and see
       it pass. Don't transfer a broken system.
 
 ### Phase B — transfer the repo (5 min)
 
-- [ ] **B1 [old owner]** — repo → **Settings** (right-most tab) → scroll to
+- [x] **B1 [old owner]** — repo → **Settings** (right-most tab) → scroll to
       the bottom **Danger Zone** → **Transfer ownership** → type the new
       owner's GitHub username → confirm.
-- [ ] **B2 [new owner]** — accept the transfer (GitHub emails you a link).
+- [x] **B2 [new owner]** — accept the transfer (GitHub emails you a link).
       *Pass: the repo now shows under YOUR account, at
       github.com/YOUR-NAME/RaidHelperReminder.*
-- [ ] **B3 — know what did NOT transfer** (by design, both of you):
+- [x] **B3 — know what did NOT transfer** (by design, both of you):
       the two **secrets** (phase D re-adds them), the **Discord bot**
       (owned by the old owner's Discord account — phase C replaces it),
       and the **old owner's access** — transferring removes it.
-- [ ] **B4 [new owner]** — add the old owner back as a **collaborator** so
+- [x] **B4 [new owner]** — add the old owner back as a **collaborator** so
       he can keep helping: repo → **Settings** → **Collaborators** →
       **Add people** → `superrcharge` → Add; old owner accepts the email
       invite. (Same mechanics as phase 0.2, roles reversed. He gets write
@@ -163,14 +163,14 @@ about his day-to-day.
 The bot that sends messages must belong to the new owner's Discord account,
 so the old owner isn't a hidden dependency forever.
 
-- [ ] **C1 [new owner]** — create the bot app: follow
+- [x] **C1 [new owner]** — create the bot app: follow
       [GUIDE.md section 5.1](GUIDE.md) exactly — it is field-tested and
       calls out every trap (the MFA prompt on Reset Token, the green
       **Save Changes** bar that silently discards the Server Members Intent
       toggle if missed, Public Bot, the invite needing Manage Server).
       You end up with: a bot token copied, **Server Members Intent ON and
       saved**, and your bot visible in the server's member list.
-- [ ] **C2 [new owner]** — give the new bot access to the private channels
+- [x] **C2 [new owner]** — give the new bot access to the private channels
       the old bot had: the **officers chat** (run reports) and the
       **test channel** — for each: right-click the channel → Edit Channel →
       Permissions → Add members or roles → your bot → ✓ View Channel,
@@ -181,7 +181,7 @@ so the old owner isn't a hidden dependency forever.
 
 ### Phase D — secrets (5 min)
 
-- [ ] **D1 [new owner]** — repo → **Settings** → **Secrets and variables →
+- [x] **D1 [new owner]** — repo → **Settings** → **Secrets and variables →
       Actions** → **New repository secret**, create exactly these two
       (names must match character-for-character):
       - `DISCORD_BOT_TOKEN` — the token from C1
