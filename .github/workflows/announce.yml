@@ -6,19 +6,34 @@
 # github.event.schedule, but GitHub misattributes which cron fired a run
 # after workflow edits, silently running the wrong mode.)
 #
-# Schedule: every 15 minutes during the evening raid window.
-# 21:00-03:59 UTC = 5PM-11:59PM EDT / 4PM-10:59PM EST - wide enough for any
-# evening raid with an hour-scale announcement lead (the lead itself is
-# config.json's announcements[].minutes_before; the post lands on the first
-# check inside that window). Running all day would cost ~2,900 Actions
-# minutes/month (over the 2,000 free for private repos); the evening window
-# costs ~870.
+# Schedule: raid nights only, explicit 10-minute slots across the hour the
+# announcement is due.
+#
+# WHY NOT "*/15" ANYMORE: GitHub throttles high-frequency schedules hard. The
+# old "*/15 0-3,21-23 * * *" declared 28 runs/day but GitHub was actually
+# executing 1-2, at arbitrary times hours outside the declared window - so
+# between go-live and July 21, 2026 every scheduled run posted 0
+# announcements. Fewer, day-scoped slots get honored far more reliably.
+#
+# WHY THESE DAYS: raids are Tue / Wed / Thu / Sun at 9PM Eastern, but 9PM ET
+# is already the NEXT day in UTC - so the UTC cron days are Mon, Wed, Thu,
+# Fri (1,3,4,5). Getting this wrong is the classic way to schedule a raid
+# announcement exactly 24 hours off.
+#
+# WHY 00:00-01:59 UTC: 9PM EDT = 01:00 UTC and 9PM EST = 02:00 UTC. With the
+# 60-minute lead in config.json (announcements[].minutes_before) the post is
+# due 00:00-01:00 UTC in summer and 01:00-02:00 UTC in winter; this window
+# covers both, so no DST edit is ever needed. The first run inside the window
+# posts and state.json dedup makes every later run that night a no-op.
+#
+# Cost: 12 slots x 4 raid nights = ~48 runs/week (~210 Actions minutes/month,
+# well under the 2,000 free) - down from ~870 under the old schedule.
 
 name: Raid-time announcements
 
 on:
   schedule:
-    - cron: "*/15 0-3,21-23 * * *"
+    - cron: "0,10,20,30,40,50 0-1 * * 1,3,4,5"
   workflow_dispatch:
     inputs:
       dry_run:
