@@ -3,9 +3,13 @@
 # a run after workflow edits, so nothing here guesses modes from schedules).
 #
 # Schedule: Friday 5PM Eastern. GitHub cron is UTC and can't follow US
-# daylight saving, so BOTH possible UTC times are scheduled; state.json dedup
-# makes the second one a harmless no-op (one of them lands at 4PM or 6PM ET
-# and finds nothing new to send).
+# daylight saving, so BOTH possible UTC times are scheduled and the script
+# decides which one is really 5PM Eastern (config.json reminders_send_hour_et,
+# checked in remind.py) - the other logs "Skipping reminders" and exits.
+#
+# Do NOT go back to relying on state.json dedup for this: dedup silences the
+# SECOND run, so the EARLIER one always won and the digest drifted to 4PM ET
+# every winter without anything looking broken.
 #
 # Set the two secrets under: Repo -> Settings -> Secrets and variables -> Actions
 #   DISCORD_BOT_TOKEN
@@ -55,8 +59,11 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             MODE="${{ inputs.mode }}"
-            EXTRA=""
-            [ "${{ inputs.dry_run }}" = "true" ] && EXTRA="--dry-run"
+            # Manual runs are for testing, so they bypass the 5PM-Eastern gate
+            # - otherwise the Run workflow button would do nothing 23 hours a
+            # day and look broken.
+            EXTRA="--ignore-send-hour"
+            [ "${{ inputs.dry_run }}" = "true" ] && EXTRA="$EXTRA --dry-run"
           else
             MODE="reminders"
             EXTRA=""
