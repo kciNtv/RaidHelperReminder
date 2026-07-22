@@ -71,6 +71,8 @@
   ],
   "_comment_horizon": "How far ahead the bot LOOKS for events. Does NOT change when reminders send - that is reminder_windows_hours above. 336 = 14 days, so recurring events posted a week or more out (Raid-Helper does this) show up in the log instead of looking like the bot is broken.",
   "event_horizon_hours": 336,
+  "_comment_send_hour": "Hour (0-23, US Eastern) the Friday digest is allowed to send. remind.yml fires at BOTH 21:00 and 22:00 UTC because GitHub cron cannot follow DST; this pins the actual send to 5PM Eastern year-round by making the wrong one a no-op. Set to null to let any scheduled run send.",
+  "reminders_send_hour_et": 17,
   "_comment_digest": "true = members missing from SEVERAL events get ONE combined DM listing them all, instead of one DM per event.",
   "digest_dms": true,
   "messages": {

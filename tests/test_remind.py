@@ -100,6 +100,36 @@ class AudienceLogic(unittest.TestCase):
         self.assertEqual(got, {"TeamBOnly", "SocialMember"})
 
 
+class EasternClock(unittest.TestCase):
+    """The Friday digest must land at 5PM Eastern in BOTH halves of the year."""
+
+    @staticmethod
+    def _utc(y, m, d, hh):
+        import datetime as _dt
+        return int(_dt.datetime(y, m, d, hh, tzinfo=_dt.timezone.utc).timestamp())
+
+    def test_summer_is_utc_minus_4(self):
+        self.assertEqual(remind.eastern_offset_hours(self._utc(2026, 7, 24, 21)), -4)
+
+    def test_winter_is_utc_minus_5(self):
+        self.assertEqual(remind.eastern_offset_hours(self._utc(2026, 12, 4, 22)), -5)
+
+    def test_dst_boundaries_2026(self):
+        # DST 2026: starts Sun Mar 8, ends Sun Nov 1.
+        self.assertEqual(remind.eastern_offset_hours(self._utc(2026, 3, 8, 6)), -5)
+        self.assertEqual(remind.eastern_offset_hours(self._utc(2026, 3, 8, 7)), -4)
+        self.assertEqual(remind.eastern_offset_hours(self._utc(2026, 11, 1, 5)), -4)
+        self.assertEqual(remind.eastern_offset_hours(self._utc(2026, 11, 1, 6)), -5)
+
+    def test_which_friday_cron_is_5pm_eastern(self):
+        # Summer: 21:00 UTC is 5PM ET and 22:00 UTC is 6PM.
+        self.assertEqual(remind.eastern_hour(self._utc(2026, 7, 24, 21)), 17)
+        self.assertEqual(remind.eastern_hour(self._utc(2026, 7, 24, 22)), 18)
+        # Winter: it flips - 21:00 UTC is 4PM and 22:00 UTC is 5PM.
+        self.assertEqual(remind.eastern_hour(self._utc(2026, 12, 4, 21)), 16)
+        self.assertEqual(remind.eastern_hour(self._utc(2026, 12, 4, 22)), 17)
+
+
 class AnnouncementMentions(unittest.TestCase):
     """A raid must ping its own team, never the whole raider pool."""
 

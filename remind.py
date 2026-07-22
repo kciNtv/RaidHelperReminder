@@ -32,6 +32,7 @@ Usage:
 """
 
 import argparse
+import datetime
 import json
 import os
 import sys
@@ -376,6 +377,34 @@ def member_display_name(member):
 # ---------------------------------------------------------------------------
 # Timing and message formatting
 # ---------------------------------------------------------------------------
+
+def _nth_sunday(year, month, n):
+    """Date of the nth Sunday of a month (n starts at 1)."""
+    first = datetime.date(year, month, 1)
+    # weekday(): Monday=0 ... Sunday=6
+    return first + datetime.timedelta(days=(6 - first.weekday()) % 7 + 7 * (n - 1))
+
+
+def eastern_offset_hours(ts):
+    """US Eastern's UTC offset at a unix timestamp: -4 in DST, else -5.
+
+    Worked out arithmetically rather than with zoneinfo on purpose - this
+    project ships zero dependencies, and zoneinfo needs the tzdata package on
+    Windows, where run_local.ps1 runs. US rule (unchanged since 2007): DST
+    starts 2AM local on the 2nd Sunday in March (07:00 UTC) and ends 2AM local
+    on the 1st Sunday in November (06:00 UTC).
+    """
+    dt = datetime.datetime.fromtimestamp(ts, datetime.timezone.utc).replace(tzinfo=None)
+    starts = datetime.datetime.combine(_nth_sunday(dt.year, 3, 2), datetime.time(7, 0))
+    ends = datetime.datetime.combine(_nth_sunday(dt.year, 11, 1), datetime.time(6, 0))
+    return -4 if starts <= dt < ends else -5
+
+
+def eastern_hour(ts):
+    """The hour of day (0-23) in US Eastern at a unix timestamp."""
+    dt = datetime.datetime.fromtimestamp(ts, datetime.timezone.utc).replace(tzinfo=None)
+    return (dt + datetime.timedelta(hours=eastern_offset_hours(ts))).hour
+
 
 def windows_due(start_time, windows_hours, now):
     """Reminder windows that currently apply to an event.
@@ -732,7 +761,8 @@ class DiscordContext:
         return self._chan_names[cid]
 
 
-def run(config, state, now, dry_run, bot_token, rh_api_key, log=print, mode="all"):
+def run(config, state, now, dry_run, bot_token, rh_api_key, log=print, mode="all",
+        ignore_send_hour=False):
     server_id = config["raidhelper"]["server_id"]
     guild_id = config["discord"]["guild_id"]
     windows = sorted(config.get("reminder_windows_hours") or [24])
@@ -763,8 +793,21 @@ def run(config, state, now, dry_run, bot_token, rh_api_key, log=print, mode="all
 
     ctx = DiscordContext(guild_id, bot_token)
     if mode in ("all", "reminders"):
-        run_reminders(config, state, events, now, dry_run, bot_token, ctx, log,
-                      report=report)
+        # GitHub cron is UTC and cannot follow DST, so remind.yml schedules
+        # BOTH 21:00 and 22:00 UTC every Friday - one of them is 5PM Eastern
+        # in summer, the other in winter. Without this gate the earlier run
+        # always won and dedup silenced the later one, so the digest actually
+        # went out at 5PM in summer but 4PM in winter. Checking the Eastern
+        # hour here makes the wrong run a no-op and pins the send time
+        # year-round.
+        want = config.get("reminders_send_hour_et")
+        current = eastern_hour(now)
+        if want is not None and not ignore_send_hour and current != int(want):
+            log(f"Skipping reminders: {current}:00 Eastern, "
+                f"reminders are pinned to {int(want)}:00 Eastern.")
+        else:
+            run_reminders(config, state, events, now, dry_run, bot_token, ctx, log,
+                          report=report)
     if mode in ("all", "announcements"):
         run_announcements(config, state, events, now, dry_run, bot_token, log, ctx,
                           report=report)
@@ -807,6 +850,9 @@ def main(argv=None):
     parser.add_argument("--state", default=os.path.join(os.path.dirname(__file__), "state.json"))
     parser.add_argument("--mode", choices=["all", "reminders", "announcements"], default="all")
     parser.add_argument("--dry-run", action="store_true", help="print instead of sending")
+    parser.add_argument("--ignore-send-hour", action="store_true",
+                        help="run reminders even outside reminders_send_hour_et "
+                             "(for manual test runs)")
     args = parser.parse_args(argv)
 
     with open(args.config, "r", encoding="utf-8") as f:
@@ -822,7 +868,8 @@ def main(argv=None):
 
     state = load_state(args.state)
     try:
-        run(config, state, int(time.time()), dry_run, bot_token, rh_api_key, mode=args.mode)
+        run(config, state, int(time.time()), dry_run, bot_token, rh_api_key,
+            mode=args.mode, ignore_send_hour=args.ignore_send_hour)
     except RuntimeError as e:
         # Clean one-line error for schedulers/logs instead of a traceback.
         sys.exit(f"ERROR: {e}")
