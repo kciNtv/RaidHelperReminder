@@ -46,6 +46,8 @@ DISCORD_API = "https://discord.com/api/v10"
 # Discord permission bits (https://discord.com/developers/docs/topics/permissions)
 ADMINISTRATOR = 1 << 3
 VIEW_CHANNEL = 1 << 10
+SEND_MESSAGES = 1 << 11
+MENTION_EVERYONE = 1 << 17   # also governs pinging roles that are not mentionable
 
 # ---------------------------------------------------------------------------
 # Small HTTP helper (stdlib only)
@@ -761,11 +763,85 @@ class DiscordContext:
         return self._chan_names[cid]
 
 
+def check_channels(config, bot_token, ctx, log):
+    """Report whether the bot can actually post in every signup channel.
+
+    Channel grants are the recurring failure in this project: they are per
+    channel, they do not survive a channel being recreated, they died when the
+    old bot was kicked, and Discord's "Sync Now" on a category silently drops
+    the member override. Reading the boxes in the UI for four channels is
+    error-prone, and the alternative - finding out at T-60 on raid night - is
+    worse. This computes the bot's effective permissions the same way Discord
+    does and prints a verdict per channel. Read-only: nothing is sent.
+    """
+    guild_id = config["discord"]["guild_id"]
+    status, me = http_json("GET", f"{DISCORD_API}/users/@me",
+                           headers=discord_headers(bot_token))
+    if status != 200 or not isinstance(me, dict):
+        raise RuntimeError(f"Could not identify the bot user: {status} {me!r}")
+    bot_id = str(me.get("id"))
+    log(f"Bot: {me.get('username')} ({bot_id})")
+
+    status, self_member = http_json(
+        "GET", f"{DISCORD_API}/guilds/{guild_id}/members/{bot_id}",
+        headers=discord_headers(bot_token))
+    if status != 200 or not isinstance(self_member, dict):
+        raise RuntimeError(f"Bot is not a member of guild {guild_id}: {status}")
+
+    # Channels the bot must be able to POST in: every signup channel it might
+    # announce into, plus the officer log channel and any fallback channel.
+    targets = []
+    for rule in config.get("audience_rules") or []:
+        cid = (rule.get("match") or {}).get("channel_id")
+        if cid and cid not in targets:
+            targets.append(str(cid))
+    for key in ("log_channel_id", "fallback_channel_id"):
+        cid = (config.get("discord") or {}).get(key)
+        if cid and str(cid) not in targets:
+            targets.append(str(cid))
+
+    roles_map = ctx.get_roles_map()
+    problems = []
+    for cid in targets:
+        name = ctx.get_channel_name(cid)
+        try:
+            overwrites = fetch_channel_overwrites(cid, bot_token)
+        except Exception as e:                      # channel gone, or no access
+            log(f"  {name} ({cid}): CANNOT READ - {e}")
+            problems.append(f"{name}: channel unreadable (deleted, or bot not added)")
+            continue
+        perms = member_channel_permissions(self_member, roles_map, guild_id, overwrites)
+        can_view = bool(perms & VIEW_CHANNEL)
+        can_send = bool(perms & SEND_MESSAGES)
+        can_ping = bool(perms & MENTION_EVERYONE)
+        verdict = "OK" if (can_view and can_send and can_ping) else "PROBLEM"
+        log(f"  {name} ({cid}): view={can_view} send={can_send} "
+            f"mention_roles={can_ping} -> {verdict}")
+        if verdict == "PROBLEM":
+            missing = [n for n, ok in (("View Channel", can_view),
+                                       ("Send Messages", can_send),
+                                       ("Mention All Roles", can_ping)) if not ok]
+            problems.append(f"{name}: missing {', '.join(missing)}")
+
+    if problems:
+        log("CHANNEL PERMISSION PROBLEMS:")
+        for p in problems:
+            log(f"  - {p}")
+    else:
+        log(f"All {len(targets)} channel(s) OK.")
+    return problems
+
+
 def run(config, state, now, dry_run, bot_token, rh_api_key, log=print, mode="all",
         ignore_send_hour=False):
     server_id = config["raidhelper"]["server_id"]
     guild_id = config["discord"]["guild_id"]
     windows = sorted(config.get("reminder_windows_hours") or [24])
+
+    if mode == "check":
+        # Permission audit only - no Raid-Helper call, nothing sent.
+        check_channels(config, bot_token, DiscordContext(guild_id, bot_token), log)
+        return
 
     # How far ahead we LOOK is deliberately separate from when we REMIND.
     # Reminders still fire per reminder_windows_hours (windows_due), so a wider
@@ -848,7 +924,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Remind unsigned members of Raid-Helper events.")
     parser.add_argument("--config", default=os.path.join(os.path.dirname(__file__), "config.json"))
     parser.add_argument("--state", default=os.path.join(os.path.dirname(__file__), "state.json"))
-    parser.add_argument("--mode", choices=["all", "reminders", "announcements"], default="all")
+    parser.add_argument("--mode",
+                        choices=["all", "reminders", "announcements", "check"],
+                        default="all")
     parser.add_argument("--dry-run", action="store_true", help="print instead of sending")
     parser.add_argument("--ignore-send-hour", action="store_true",
                         help="run reminders even outside reminders_send_hour_et "
