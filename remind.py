@@ -703,9 +703,23 @@ def run(config, state, now, dry_run, bot_token, rh_api_key, log=print, mode="all
     guild_id = config["discord"]["guild_id"]
     windows = sorted(config.get("reminder_windows_hours") or [24])
 
-    horizon = max(windows) * 3600 + 900  # a little margin past the widest window
+    # How far ahead we LOOK is deliberately separate from when we REMIND.
+    # Reminders still fire per reminder_windows_hours (windows_due), so a wider
+    # horizon never sends anything earlier - it only makes far-out events
+    # visible in the log. Worth it because Raid-Helper posts the next instance
+    # of a recurring event over a week ahead: on July 21, 2026 the recreated
+    # Thursday raid sat 217h out and was completely invisible, which read as
+    # "the bot is broken" when the event was simply beyond the horizon.
+    horizon_hours = int(config.get("event_horizon_hours") or max(windows))
+    horizon = horizon_hours * 3600 + 900  # a little margin past the window
     events = fetch_upcoming_events(server_id, rh_api_key, horizon)
-    log(f"Fetched {len(events)} upcoming event(s) within {max(windows)}h.")
+    log(f"Fetched {len(events)} upcoming event(s) within {horizon_hours}h.")
+    for ev in sorted(events, key=lambda e: int(e.get("startTime") or 0)):
+        start = int(ev.get("startTime") or 0)
+        aud, _spec = pick_audience(ev, config)
+        flag = "" if (start - now) <= max(windows) * 3600 else "  [beyond reminder window]"
+        log(f"    - <t:{start}> '{ev.get('title')}' "
+            f"in channel {ev.get('channelId')} -> audience '{aud}'{flag}")
 
     # Optional run reports: if discord.log_channel_id is set, ONE message per
     # raid is posted there after the run (display names, #channel-names) -

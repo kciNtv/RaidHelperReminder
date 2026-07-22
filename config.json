@@ -69,6 +69,8 @@
   "reminder_windows_hours": [
     168
   ],
+  "_comment_horizon": "How far ahead the bot LOOKS for events. Does NOT change when reminders send - that is reminder_windows_hours above. 336 = 14 days, so recurring events posted a week or more out (Raid-Helper does this) show up in the log instead of looking like the bot is broken.",
+  "event_horizon_hours": 336,
   "_comment_digest": "true = members missing from SEVERAL events get ONE combined DM listing them all, instead of one DM per event.",
   "digest_dms": true,
   "messages": {
