@@ -639,24 +639,11 @@ def run_announcements(config, state, events, now, dry_run, bot_token, log, ctx=N
                     log(f"  Announcement posted for '{event.get('title')}' in {channel}.")
                     chan_label = ctx.get_channel_name(channel) if ctx else str(channel)
                     report_event(report, event)["announced"] = chan_label
-                    # Tell the officers who is still unsigned at invite time.
-                    if ctx is not None:
-                        _an, spec = pick_audience(event, config)
-                        responded = responded_user_ids(
-                            event_signups(event),
-                            config.get("treat_as_no_response") or [])
-                        expected = audience_members(
-                            ctx.get_members(), spec,
-                            guild_id=config["discord"]["guild_id"],
-                            roles_map=ctx.get_roles_map() if spec.get("channel_access") else None,
-                            overwrites_for=ctx.get_overwrites if spec.get("channel_access") else None,
-                        )
-                        still = [m for m in expected
-                                 if str(m["user"]["id"]) not in responded]
-                        if still:
-                            log(f"  Still unsigned for '{event.get('title')}' "
-                                f"({len(still)}): " + names_list(still))
-                            report_event(report, event)["unsigned"] = names_list(still)
+                    # Deliberately NO "still unsigned" list here: at T-60 the
+                    # sign-up window is effectively over, so naming stragglers
+                    # in officers chat is noise nobody can act on. That list
+                    # belongs to the Friday digest run, where it says who was
+                    # actually DMed. (Dropped July 22, 2026 at Mike's call.)
                 else:
                     log(f"  FAILED to announce in channel {channel} - check bot access.")
                     chan_label = ctx.get_channel_name(channel) if ctx else str(channel)
