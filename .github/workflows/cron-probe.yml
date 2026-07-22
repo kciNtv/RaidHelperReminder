@@ -1,0 +1,41 @@
+# TEMPORARY - delete once it has answered its question.
+#
+# Does GitHub actually run our scheduled workflows?
+#
+# Between go-live and July 21, 2026 every scheduled announcement posted 0,
+# because GitHub was throttling a "*/15" cron down to 1-2 arbitrary runs a day
+# at times hours outside the declared window. The cron was replaced with
+# explicit low-frequency slots, but the replacement was pushed six minutes
+# before its first slot and that slot did not fire - so as of now there is no
+# evidence the new schedule works either, and the next natural chance to find
+# out is a raid night ~20 hours away.
+#
+# This probe answers it in minutes instead. It sends nothing, calls no Discord
+# or Raid-Helper API, and uses no secrets - it only prints when it ran and
+# which slot it thinks it was, so "did it fire" and "how late was it" are both
+# readable from the run list.
+#
+# Eight chances across ~85 minutes. If NONE of them fire, scheduling on this
+# repo is unreliable and announcements should move off GitHub cron entirely.
+
+name: TEMP cron probe
+
+on:
+  schedule:
+    - cron: "20,30,40,50 4 * * *"
+    - cron: "0,10,20,30 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say when this actually ran
+        run: |
+          echo "trigger        : ${{ github.event_name }}"
+          echo "declared slot  : ${{ github.event.schedule }}"
+          echo "actual UTC time: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "actual Eastern : $(TZ=America/New_York date '+%Y-%m-%d %H:%M:%S %Z')"
