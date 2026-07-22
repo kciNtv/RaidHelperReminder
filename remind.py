@@ -665,7 +665,8 @@ def run_reminders(config, state, events, now, dry_run, bot_token, ctx, log,
 
     if not send_dms:
         listed = sum(1 for e in report["events"].values() if e["unsigned"])
-        log(f"Summary done. {listed} raid(s) with unsigned members; no DMs sent.")
+        log(f"Officer unsigned-list done. {listed} raid(s) with unsigned "
+            f"members; no DMs sent.")
     else:
         log(f"Reminders done. {dm_count} DM(s) sent." if not dry_run
             else "Reminders done (dry run).")
