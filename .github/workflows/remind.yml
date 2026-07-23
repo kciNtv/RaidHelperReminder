@@ -25,9 +25,12 @@
 name: Send signup reminders
 
 on:
-  schedule:
-    - cron: "0 21 * * 5"     # reminders: Friday 5PM EDT (summer)
-    - cron: "0 22 * * 5"     # reminders: Friday 5PM EST (winter)
+  # schedule: DISABLED 2026-07-23 - scheduling moved to cron-job.org, which
+  # fires this via the workflow_dispatch API below (Fri 5PM ET, mode=reminders).
+  # GitHub's scheduler was unreliable; the external trigger is timing now.
+  # Re-enable by uncommenting the two lines below if cron-job.org ever goes away.
+  #   - cron: "0 21 * * 5"     # reminders: Friday 5PM EDT (summer)
+  #   - cron: "0 22 * * 5"     # reminders: Friday 5PM EST (winter)
   workflow_dispatch:
     inputs:
       mode:
