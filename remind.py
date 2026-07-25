@@ -967,11 +967,15 @@ def run(config, state, now, dry_run, bot_token, rh_api_key, log=print, mode="all
     log_channel = (config.get("discord") or {}).get("log_channel_id") or ""
     if log_channel and not dry_run and bot_token:
         for ev in sorted(report["events"].values(), key=lambda e: e["start"]):
-            if not (ev["dms"] or ev["closed"] or ev["announced"] or ev["unsigned"]):
+            # A successful DM is deliberately NOT reported and NOT a reason to
+            # post: officers were getting a 33-name "we messaged all these
+            # people" wall every Friday that nobody had to act on. The roster
+            # is still in the Actions log. Officer chat now only gets things
+            # that need a human: a DM that could not be delivered, a raid-time
+            # announcement, and Sunday's still-unsigned list.
+            if not (ev["closed"] or ev["announced"] or ev["unsigned"]):
                 continue
             lines = [f"**📋 {ev['title']}** — starts <t:{ev['start']}:R>"]
-            if ev["dms"]:
-                lines.append("📨 Reminder DMs sent: " + ", ".join(ev["dms"]))
             if ev["closed"]:
                 lines.append("📪 Couldn't DM (privacy settings): " + ", ".join(ev["closed"]))
             if ev["announced"]:

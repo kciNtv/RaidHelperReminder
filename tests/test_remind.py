@@ -422,12 +422,20 @@ class UnsignedListMode(RunHarness, unittest.TestCase):
             now + 60, state=state, dry_run=False, config=cfg, mode="reminders")
         self.assertEqual([uid for uid, _ in dms2], ["104"])
 
-    def test_friday_report_omits_the_unsigned_list(self):
+    def test_friday_report_says_nothing_when_every_dm_landed(self):
+        """A clean Friday run is silent in officers chat.
+
+        It used to post "Reminder DMs sent: <33 names>" per raid - noise that
+        read like the Sunday list and buried it. Delivered DMs are logged in
+        Actions only; officers hear from this run only when a DM fails.
+        """
         now = KARA["startTime"] - 30 * 3600
         state, _l, dms, posts = self.run_once(
             now, dry_run=False, config=self.officer_cfg(), mode="reminders")
+        self.assertEqual([uid for uid, _ in dms], ["104"])   # the DM did go out
+        self.assertEqual(self.officer_posts(posts), [])      # officers hear nothing
         officer = "\n".join(self.officer_posts(posts))
-        self.assertIn("Reminder DMs sent", officer)
+        self.assertNotIn("Reminder DMs sent", officer)
         self.assertNotIn("Still unsigned", officer)
 
     def test_unsigned_list_never_truncates_the_officer_list(self):
