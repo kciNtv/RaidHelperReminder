@@ -8,19 +8,9 @@
   "raidhelper": {
     "server_id": "1349830753403539679"
   },
-  "_comment_audiences": "LIVE (go-live July 17, 2026): default=@raiders, teamRed=Raid Team Red, teamBlue=Raid Team Blue by role. The 'testers' audience is PERMANENT - events posted in the test channel only ever DM the testers (Kcin + Mike), never the guild.",
+  "_comment_audiences": "LIVE (go-live July 17, 2026): there are no separate raid teams - everyone with the Raider role (ID 1361002868781351152) is the audience for every event. The 'testers' audience is PERMANENT - events posted in the test channel only ever DM the testers (Kcin + Mike), never the guild.",
   "audiences": {
     "default": {
-      "role_ids": [
-        "1361002868781351152"
-      ]
-    },
-    "teamRed": {
-      "role_ids": [
-        "1361002868781351152"
-      ]
-    },
-    "teamBlue": {
       "role_ids": [
         "1361002868781351152"
       ]
@@ -32,37 +22,13 @@
       ]
     }
   },
-  "_comment_rules": "Which audience each event gets, by the channel the signup was posted in. First match wins; no match = default. Red raids Tue + Thu, Blue raids Wed + Sun.",
+  "_comment_rules": "Which audience each event gets, by the channel the signup was posted in. First match wins; no match = default (the Raider role). Only the test channel is special-cased.",
   "audience_rules": [
     {
       "match": {
         "channel_id": "1527491633233526824"
       },
       "audience": "testers"
-    },
-    {
-      "match": {
-        "channel_id": "1412563215396634624"
-      },
-      "audience": "teamRed"
-    },
-    {
-      "match": {
-        "channel_id": "1412580181285277770"
-      },
-      "audience": "teamRed"
-    },
-    {
-      "match": {
-        "channel_id": "1458633730624065673"
-      },
-      "audience": "teamBlue"
-    },
-    {
-      "match": {
-        "channel_id": "1466281351232618621"
-      },
-      "audience": "teamBlue"
     }
   ],
   "_comment_windows": "Hours-before-start at which sign-up reminders fire. 240 = 10 days, because events are posted Tuesday 8PM for the FOLLOWING lockout week: by the Friday digest the Sunday raid is ~9 days (220h) out, so the old 168h window silently dropped it. One reminder per event per person - state.json dedup - sent by the Friday-only schedule in remind.yml.",
@@ -84,7 +50,7 @@
     "fallback": "(couldn't DM you) You have upcoming raids you haven't signed up for - please check the signup channels!",
     "per_window": {}
   },
-  "_comment_announcements": "Channel messages posted N minutes before each event starts, in the event's own channel. mention_audience=true pings the team that owns the raid (Red raids ping Raid Team Red, Blue ping Raid Team Blue) using the same channel rules as the DMs - so there is no second mapping to maintain. mention_role_ids stays as the fallback if an audience has no roles.",
+  "_comment_announcements": "Channel messages posted N minutes before each event starts, in the event's own channel. mention_audience=true pings the audience that owns the event (the Raider role, via the same channel rules as the DMs - so there is no second mapping to maintain). mention_role_ids stays as the fallback if an audience has no roles.",
   "announcements": [
     {
       "minutes_before": 60,
